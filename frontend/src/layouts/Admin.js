@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, Route, Routes } from "react-router-dom";
-import { Container } from "reactstrap";
+import { Container, Collapse,Button } from "reactstrap";
 // core components
 import routes from "routes.js";
 import Index from "views/Index.js";
@@ -59,9 +59,22 @@ const Admin = (props) => {
     return "Brand";
   };
 
+  // const [isOpen, setIsOpen] = useState(true);
+  // const toggle = () => {
+  //   setIsOpen(!isOpen);
+  // };
+
   return (
     <>
+      {/* <Collapse isOpen={isOpen} navbar>
+        <Sidebar {...props} routes={routes} logo={{
+          innerLink: "/admin/index", imgSrc: require("../assets/img/brand/argon-react.png"), imgAlt: "...",
+        }} />
+      </Collapse>
+      <Button onClick={toggle} type="button" style={{backgroundColor:"red", cursor:"pointer", margin:"10px"}}>Toggle Sidebar</Button> */}
+
       <Sidebar {...props} routes={routes} logo={{ innerLink: "/admin/index", imgSrc: require("../assets/img/brand/argon-react.png"), imgAlt: "...", }} />
+
       <div className="main-content" ref={mainContent}>
         <AdminNavbar {...props} brandText={getBrandText(props?.location?.pathname)} />
         {/* <Routes>
@@ -87,7 +100,7 @@ const Admin = (props) => {
           <Route path="/ndr" element={<NDR />} />
           <Route path="/rto" element={<RTO />} />
           <Route path="/re-orders-manage" element={<Reordermanage />} />
-          <Route path="/follow-up-service-cal" element={<FollowupServiceCall />} />
+          <Route path="/follow-up-service-call" element={<FollowupServiceCall />} />
 
         </Routes>
         <Container fluid>
@@ -99,90 +112,3 @@ const Admin = (props) => {
 };
 
 export default Admin;
-
-// import React, { useState } from "react";
-// import { NavLink as NavLinkRRD, Link } from "react-router-dom";
-// import { Nav, Collapse } from "reactstrap";
-// import routes from "routes.js";
-
-// const Sidebar = (props) => {
-//   const [expandedRoutes, setExpandedRoutes] = useState([]);
-
-//   const toggleRoute = (route) => {
-//     if (expandedRoutes.includes(route)) {
-//       setExpandedRoutes(expandedRoutes.filter((r) => r !== route));
-//     } else {
-//       setExpandedRoutes([...expandedRoutes, route]);
-//     }
-//   };
-
-//   const renderSubRoutes = (subRoutes) => {
-//     return subRoutes.map((prop, key) => {
-//       return (
-//         <li key={key}>
-//           <NavLinkRRD to={prop.layout + prop.path} activeClassName="active">
-//             <i className={prop.icon} />
-//             <p>{prop.name}</p>
-//           </NavLinkRRD>
-//         </li>
-//       );
-//     });
-//   };
-
-//   const renderRoutes = (routes) => {
-//     return routes.map((prop, key) => {
-//       if (prop.subRoutes) {
-//         return (
-//           <li key={key}>
-//             <Link
-//               to="#"
-//               onClick={() => toggleRoute(prop.path)}
-//               data-toggle="collapse"
-//             >
-//               <i className={prop.icon} />
-//               <p>
-//                 {prop.name}
-//                 <b className="caret" />
-//               </p>
-//             </Link>
-//             <Collapse isOpen={expandedRoutes.includes(prop.path)}>
-//               <Nav>{renderSubRoutes(prop.subRoutes)}</Nav>
-//             </Collapse>
-//           </li>
-//         );
-//       } else {
-//         return (
-//           <li key={key}>
-//             <NavLinkRRD to={prop.layout + prop.path} activeClassName="active">
-//               <i className={prop.icon} />
-//               <p>{prop.name}</p>
-//             </NavLinkRRD>
-//           </li>
-//         );
-//       }
-//     });
-//   };
-
-//   return (
-//     <div className="sidebar">
-//       <div className="sidebar-wrapper">
-//         <div className="logo">
-//           <Link
-//             to={props.logo.innerLink}
-//             className="simple-text logo-mini"
-//           >
-//             <div className="logo-img">
-//               <img
-//                 src={props.logo.imgSrc}
-//                 alt={props.logo.imgAlt}
-//               />
-//             </div>
-//           </Link>
-//         </div>
-//         <Nav>{renderRoutes(routes)}</Nav>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Sidebar;

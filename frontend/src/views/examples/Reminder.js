@@ -3,22 +3,22 @@ import Header from "components/Headers/Header.js";  // core components
 import "../../assets/css/profile.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import CustomPagination from "./CustomPagination";
 
 const Profile = () => {
 
-  const conertToAsiaTime = (utcTimestamp) =>{
+  const conertToAsiaTime = (utcTimestamp) => {
     const date = new Date(utcTimestamp);
     const options = {
       timeZone: 'Asia/Kolkata',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      hour:'2-digit',
-      minute:'2-digit',
-      seconds:'2-digit'
+      hour: '2-digit',
+      minute: '2-digit',
+      seconds: '2-digit'
     };
-    return date.toLocaleString('en-US' , options).replace(/\//g,'-');
+    return date.toLocaleString('en-US', options).replace(/\//g, '-');
   }
 
   // for remainder date field
@@ -29,24 +29,122 @@ const Profile = () => {
 
   // for option employee field
   const [selectedOption, setSelectedOption] = useState("");
-  const handleChange = (event) => {
+  const handleChange1 = (event) => {
     setSelectedOption(event.target.value);
   };
 
+  // Pagination
+  const [userdata, setUserdata] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0); // Initialize totalRecords state
+  const [currentPage, setCurrentPage] = useState(1);
+
+
+  useEffect(() => {
+    // Retrieve the current page from local storage if available
+    const savedPage = localStorage.getItem('currentPage');
+    if (savedPage) {
+      setCurrentPage(parseInt(savedPage));
+    } else {
+      setCurrentPage(1); // Default to page 1 if not found in local storage
+    }
+  }, []);
+
   useEffect(() => {
     fetchdata();
-  }, [])
+  }, [currentPage]);
 
-  const [userdata, setUserdata] = useState([]);
+  // for option to filter data showing rows field
+  const [selectedOptionrecordPerPage, setSelectedOptionrecordPerPage] = useState("");
+  const handleChange = (event) => {
+    setSelectedOptionrecordPerPage(event.target.value);
+  };
+
+
+  const handlesubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    try {
+      await fetchdata(); // Fetch data using the selected option
+    } catch (error) {
+      console.error('Error occurred while fetching data:', error);
+    }
+  };
+
+  // route for showing data of Reminder-manage
+
   const fetchdata = async () => {
     try {
-      const result = await axios('http://localhost:5000/reminder');
-      setUserdata(result.data);
+      const result = await axios(`http://localhost:5000/reminder?page=${currentPage}&limit=${selectedOptionrecordPerPage}`);
+      setUserdata(result.data.data);
+      setTotalRecords(result.data.totalRecords);
     }
     catch (err) {
       console.log('error cocured in fetching axios from reminder' + err.stack);
     }
   }
+
+  const changeCPage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  useEffect(() => {
+    localStorage.setItem('currentPage', currentPage);
+  }, [currentPage]);
+
+  // route for handle feedback form modal 
+  const [feedbackvalues, setFeedbackValues] = useState({
+    calltype: "",
+    subject: "",
+    ordernumber: "",
+    date: "",
+    enquiry: "",
+    concern_department: "",
+    message: "",
+    mail_message: "",
+    status: "",
+    feedback_status: "",
+    reminder_date: "",
+    reminder_time: "",
+    reminder: "",
+    doctor_comments: ""
+  })
+
+  axios.defaults.withCredentials = true;
+
+  const handleFeedbackForm = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`http://localhost:5000/feedback-form-modal`, feedbackvalues);
+
+      if (response.data.Status === 'Success') {
+        alert('Data updated successfully');
+        window.location.reload();
+      } else {
+        alert(response.data.Error || 'Something went wrong in sending data');
+      }
+    } catch (error) {
+      console.error('Error occurred while fetching from backend:', error);
+      alert('Error occurred while sending data to the server');
+    }
+  };
+
+  useEffect(() => {
+    fetchdataIHmodal2();
+  }, [])
+
+  const [userdata2, setUserdata2] = useState([]);
+  const fetchdataIHmodal2 = async (phoneNumber) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/feedbackFormModalTable?phone=${phoneNumber}`);
+      setUserdata2(response.data);
+      // console.log("reminder table result", response);
+    }
+    catch (err) {
+      console.log('error cocured in fetching axios from feedbackFormModalTable' + err.stack);
+    }
+  }
+  // to show date =  current date in feedback modal
+  const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  const [selectedDateModal, setSelectedDateModal] = useState(currentDate);
 
   return (
     <>
@@ -65,36 +163,57 @@ const Profile = () => {
                 </Row>
               </CardHeader>
               <CardBody>
-                <Form>
-
-                  <div className="pl-lg-4">
-                    <Row className="form-control-main-section">
-                      <Col lg="6">
-                        <FormGroup>
-                          <label className="form-control-label" htmlFor="input-username" > Reminder Date </label>
-                          <Input type="date" id="dateInput" value={selectedDate} onChange={handleDateChange} className="form-control-alternative" />
-                          {selectedDate && (<p>selectedDate: {selectedDate}</p>)}
-                        </FormGroup>
-                      </Col>
-                      <Col lg="6">
+                <div className="pl-lg-4">
+                  <Row className="form-control-main-section">
+                    <Col lg="4">
+                      <FormGroup>
+                        <label className="form-control-label" htmlFor="input-username" > Reminder Date </label>
+                        <Input type="date" id="dateInput" value={selectedDate} onChange={handleDateChange} className="form-control-alternative" />
+                        {selectedDate && (<p>selectedDate: {selectedDate}</p>)}
+                      </FormGroup>
+                    </Col>
+                    <Col lg="4">
+                      <Form>
                         <FormGroup>
                           <label className="form-control-label" htmlFor="input-email" > Care Team </label>
-                          <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
-                            <option value={""}>Select Employee</option>
-                            <option value={" pallavi@vedobi.com"}>pallavi@vedobi.com</option>
-                            <option value={" dr.vishakha@vedobi.com"}>dr.vishakha@vedobi.com</option>
-                            <option value={" kiruthika@vedobi.com"}>kiruthika@vedobi.com</option>
-                            <option value={" mansi.rajput@vedobi.com"}>mansi.rajput@vedobi.com</option>
-                            <option value={" nikita.mukeria@vedobi.com"}>nikita.mukeria@vedobi.com</option>
-                          </select>
-                          <p>Selected option:{selectedOption}</p>
+                          <div style={{ display: "flex" }}>
+
+                            <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
+                              <option value={""}>Select Employee</option>
+                              <option value={" pallavi@vedobi.com"}>pallavi@vedobi.com</option>
+                              <option value={" dr.vishakha@vedobi.com"}>dr.vishakha@vedobi.com</option>
+                              <option value={" kiruthika@vedobi.com"}>kiruthika@vedobi.com</option>
+                              <option value={" mansi.rajput@vedobi.com"}>mansi.rajput@vedobi.com</option>
+                              <option value={" nikita.mukeria@vedobi.com"}>nikita.mukeria@vedobi.com</option>
+                            </select>
+                            <Button className="form-control-table-inner-button">Submit </Button>
+                          </div>
                         </FormGroup>
-                      </Col>
-                      <Col style={{ textAlign: "center" }}> <Button className="form-control-reminder-button">Submit </Button></Col>
-                    </Row>
-                  </div>
-                </Form>
+                      </Form>
+                    </Col>
+
+                    <Col lg="4">
+                      <Form onSubmit={handlesubmit}>
+                        <FormGroup>
+                          <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
+                          <div style={{ display: "flex" }}>
+                            <select id="option" value={selectedOptionrecordPerPage} onChange={handleChange} className="form-control-alternative">
+                              <option value={25}>25</option>
+                              <option value={50}>50</option>
+                              <option value={100}>100</option>
+                              <option value={150}>150</option>
+                              <option value={200}>200</option>
+                              <option value={250}>250</option>
+                            </select>
+                            <Button type="submit" className="form-control-table-inner-button">Go</Button>
+                          </div>
+                        </FormGroup>
+                      </Form>
+                    </Col>
+                  </Row>
+                </div>
                 <hr />
+
                 <Table className="align-items-center table-flush" responsive>
                   <thead className="table-thead-main-body">
                     <tr className="table-thead-tr-headings text-center">
@@ -119,38 +238,52 @@ const Profile = () => {
                       return (
                         <tr className="text-center" key={i}>
                           <td className="table-tr-th-border">{i + 1}</td>
+
+                          {/* FeedBack Form Modal  Starts here */}
                           <td className="table-tr-th-border">
+
                             {/* <!-- Button trigger modal --> */}
-                            
-                            <Button type="button" className="btn table-td-action" data-bs-toggle="modal" data-bs-target="#exampleModal" style={{ backgroundColor: "#4141e7", color: "white" }}>
+
+                            <Button type="button" className="btn table-td-action" data-bs-toggle="modal" style={{ backgroundColor: "#4141e7", color: "white" }}
+                              data-bs-target={`#exampleModal-${i}`}
+                              onClick={() => {
+                                // setFeedbackValues({ ...feedbackvalues, ordernumber: user.shopping_order_id, date: selectedDateModal })
+                                fetchdataIHmodal2(user?.number);
+                              }}
+                            >
                               <i className="fa fa-pencil" />
+
                             </Button>
 
                             {/* <!-- Modal --> */}
-                            <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+                            <div className="modal fade" id={`exampleModal-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel-${i}`} aria-hidden="true">
                               <div className="modal-dialog modal-xl">
                                 <div className="modal-content">
                                   <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
-                                    <h1 className="modal-title fs-8" id="exampleModalLabel">FeedBack</h1>
+                                    <h1 className="modal-title fs-8" id={`exampleModalLabel-${i}`}>FeedBack</h1>
                                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                   </div>
-                                  <h1 className="modal-title fs-5" id="exampleModalLabel" style={{ textAlign: "center", margin: "20px" }}>Customer Support Queries Order No.55301
+                                  <h1 className="modal-title fs-5" id={`exampleModalLabel-${i}`} style={{ textAlign: "center", margin: "20px" }}>
+                                    Customer Support Queries Order No. {user.ordernumber}
                                   </h1>
                                   <hr style={{ width: "40%", margin: "0 auto" }} />
                                   <div className="modal-body">
-                                    <Form>
+                                    <Form onSubmit={handleFeedbackForm}>
+
+                                      {/* call type and subject */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label"> Call Type<span className="required-marker" >*</span> </Label>
-                                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                            <select id="option" name="calltype" onChange={(e) => setFeedbackValues({ ...feedbackvalues, calltype: e.target.value })} className="form-control-alternative">
                                               <option value={""}>Select</option>
-                                              <option value={"option1"}>Inbound Call</option>
-                                              <option value={"option2"}>Outbound Call</option>
-                                              <option value={"option3"}>Chat</option>
-                                              <option value={"option4"}>Email</option>
-                                              <option value={"option5"}>Whatsapp</option>
-                                              <option value={"option5"}>Facebook</option>
+                                              <option value={"Inbound Call"}>Inbound Call</option>
+                                              <option value={"Outbound Call"}>Outbound Call</option>
+                                              <option value={"Chat"}>Chat</option>
+                                              <option value={"Email"}>Email</option>
+                                              <option value={"Whatsapp"}>Whatsapp</option>
+                                              <option value={"Facebook"}>Facebook</option>
                                             </select>
                                           </FormGroup>
                                         </Col>
@@ -159,82 +292,89 @@ const Profile = () => {
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label"> Subject<span className="required-marker" >*</span> </Label>
-                                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                            <select id="option" className="form-control-alternative" name="subject" onChange={(e) => setFeedbackValues({ ...feedbackvalues, subject: e.target.value })}>
                                               <option value={""}>Select</option>
-                                              <option value={"option1"}>FeedBack Call</option>
-                                              <option value={"option2"}>Service Call</option>
-                                              <option value={"option3"}>Reminder Call</option>
-                                              <option value={"option4"}>Sale </option>
-                                              <option value={"option5"}>Doctor Consulation</option>
-                                              <option value={"option5"}>Order Verification</option>
-                                              <option value={"option4"}>Enquiry about the product </option>
-                                              <option value={"option4"}>Delivery Issue/Dispute </option>
-                                              <option value={"option4"}>Customer Complaint </option>
-                                              <option value={"option4"}>Order Cancellattion </option>
-                                              <option value={"option4"}>Address Verification</option>
-                                              <option value={"option4"}>NDR </option>
-                                              <option value={"option4"}>RTO </option>
-                                              <option value={"option4"}>Others </option>
+                                              <option value={"FeedBack Call"}>FeedBack Call</option>
+                                              <option value={"Service Call"}>Service Call</option>
+                                              <option value={"Reminder Call"}>Reminder Call</option>
+                                              <option value={"Sale"}>Sale </option>
+                                              <option value={"Doctor Consulation"}>Doctor Consulation</option>
+                                              <option value={"Order Verification"}>Order Verification</option>
+                                              <option value={"Enquiry about the product"}>Enquiry about the product </option>
+                                              <option value={"Delivery Issue/Dispute "}>Delivery Issue/Dispute </option>
+                                              <option value={"Customer Complaint"}>Customer Complaint </option>
+                                              <option value={"Order Cancellattion"}>Order Cancellattion </option>
+                                              <option value={"Address Verification"}>Address Verification</option>
+                                              <option value={"NDR"}>NDR </option>
+                                              <option value={"RTO"}>RTO </option>
+                                              <option value={"Others"}>Others </option>
                                             </select>
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* order number and phone */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
-                                            <Label for="exampleEmail" className="feedback-modal-label"> Order Number<span className="required-marker" >*</span> </Label>
+                                            <Label for="exampleEmail" className="feedback-modal-label"> Order Number</Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="address"
-                                              placeholder="1234 Main St"
-                                              value={55301}
+                                              name="ordernumber"
+                                              placeholder="12354"
+                                              value={user.ordernumber}
+                                              readOnly
                                             />
                                           </FormGroup>
                                         </Col>
 
                                         <Col md={6}>
                                           <FormGroup>
-                                            <Label for="exampleEmail" className="feedback-modal-label"> phone<span className="required-marker" >*</span> </Label>
+                                            <Label for="exampleEmail" className="feedback-modal-label"> phone</Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="address"
-                                              placeholder="1234 Main St"
+                                              name="number"
+                                              placeholder="ex- 9201XXXXXX"
                                               type="number"
-                                              value={9886558888}
+                                              defaultValue={user.number}
+                                              readOnly
                                             />
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* name and email */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
-                                            <Label for="exampleEmail" className="feedback-modal-label">Name<span className="required-marker" >*</span> </Label>
+                                            <Label for="exampleEmail" className="feedback-modal-label">Name </Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="address"
-                                              placeholder="1234 Main St"
+                                              name="name"
+                                              placeholder="ex- saurabh ojha"
                                               type="text"
-                                            // value={Saurabh}
+                                              defaultValue={user.name}
+                                              readOnly
                                             />
                                           </FormGroup>
                                         </Col>
 
                                         <Col md={6}>
                                           <FormGroup>
-                                            <Label for="exampleEmail" className="feedback-modal-label"> Email<span className="required-marker" >*</span> </Label>
+                                            <Label for="exampleEmail" className="feedback-modal-label"> Email </Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="address"
-                                              placeholder="1234 Main St"
+                                              name="email"
+                                              placeholder="Please enter your email"
                                               type="email"
-                                            // value={sourabhojha12gmail.com}
+                                              defaultValue={user.email}
+                                              readOnly
                                             />
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* address and date */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
@@ -242,9 +382,10 @@ const Profile = () => {
                                             <Input
                                               id="exampleAddress"
                                               name="address"
-                                              placeholder="1234 Main St"
+                                              placeholder="ex-1234 Main St"
                                               type="text"
-                                            // value={nangloi}
+                                              defaultValue={user.address}
+                                              readOnly
                                             />
                                           </FormGroup>
                                         </Col>
@@ -252,32 +393,26 @@ const Profile = () => {
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label"> Date<span className="required-marker" >*</span> </Label>
-                                            <Input
-                                              id="exampleAddress"
-                                              name="address"
-                                              placeholder="1234 Main St"
-                                              type="date"
-                                              value={2024}
-                                            />
+                                            <Input id="exampleAddress" type="date" name="date" placeholder="1234 Main St" value={selectedDateModal} readOnly />
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* enquiry type and concern department */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label">Enquiry Type<span className="required-marker" >*</span> </Label>
-                                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                            <select id="option" className="form-control-alternative" name="enquiry" onChange={(e) => setFeedbackValues({ ...feedbackvalues, enquiry: e.target.value })} >
                                               <option value={""}>Please Select One</option>
-                                              <option value={"option1"}>Order Related Issue</option>
-                                              <option value={"option2"}>Damage Product Received</option>
-                                              <option value={"option3"}>Payment Related Issue</option>
-                                              <option value={"option4"}>Wrong Product Received</option>
-                                              <option value={"option5"}>Product Purchase</option>
-                                              <option value={"option5"}>Product Feedback</option>
-                                              <option value={"option5"}>Product Related Issue</option>
-                                              <option value={"option5"}>Consulation</option>
-
+                                              <option value={"Order Related Issue"}>Order Related Issue</option>
+                                              <option value={"Damage Product Received"}>Damage Product Received</option>
+                                              <option value={"Payment Related Issue"}>Payment Related Issue</option>
+                                              <option value={"Wrong Product Received"}>Wrong Product Received</option>
+                                              <option value={"Product Purchase"}>Product Purchase</option>
+                                              <option value={"Product Feedback"}>Product Feedback</option>
+                                              <option value={"Product Related Issue"}>Product Related Issue</option>
+                                              <option value={"Consulation"}>Consulation</option>
                                             </select>
                                           </FormGroup>
                                         </Col>
@@ -286,28 +421,31 @@ const Profile = () => {
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label">Concern Department<span className="required-marker" >*</span> </Label>
-                                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                            <select id="option" className="form-control-alternative" name="concern_department" onChange={(e) => setFeedbackValues({ ...feedbackvalues, concern_department: e.target.value })}  >
                                               <option value={""}>Concern Department</option>
-                                              <option value={"option1"}>Dispatch/Store Department</option>
-                                              <option value={"option2"}>Sales Department</option>
-                                              <option value={"option3"}>Payment Gateway Department </option>
-                                              <option value={"option4"}>Technical Department</option>
-                                              <option value={"option5"}>Customer Care Department</option>
-                                              <option value={"option5"}>Consulation</option>
+                                              <option value={"Dispatch/Store Department"}>Dispatch/Store Department</option>
+                                              <option value={"Sales Department"}>Sales Department</option>
+                                              <option value={"Payment Gateway Department"}>Payment Gateway Department </option>
+                                              <option value={"Technical Department"}>Technical Department</option>
+                                              <option value={"Customer Care Department"}>Customer Care Department</option>
+                                              <option value={"Consulation"}>Consulation</option>
                                             </select>
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* message and mail textfor customer */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label"> Message<span className="required-marker" >*</span> </Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="Message"
+                                              name="message"
                                               placeholder="Type Your Message Here"
                                               type="textarea"
+                                              value={user.message} readOnly
+                                              onChange={(e) => setFeedbackValues({ ...feedbackvalues, message: e.target.value })}
                                             />
                                           </FormGroup>
                                         </Col>
@@ -317,23 +455,27 @@ const Profile = () => {
                                             <Label for="exampleEmail" className="feedback-modal-label"> Mail Text for Customer<span className="required-marker" >*</span> </Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="MailText"
+                                              name="mail_message"
                                               placeholder="ex. Hi Ajay, Thank you for your purchase with us. Your order should have arrived by now and we hope everything went well"
                                               type="textarea"
+                                              value={user.mail_message}
+                                              readOnly
+                                              onChange={(e) => setFeedbackValues({ ...feedbackvalues, mail_message: e.target.value })}
                                             />
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* ticket status and feedback status */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label">Ticket Status<span className="required-marker" >*</span> </Label>
-                                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                            <select id="option" className="form-control-alternative" name="status" onChange={(e) => setFeedbackValues({ ...feedbackvalues, status: e.target.value })} >
                                               <option value={""}>Status</option>
-                                              <option value={"option1"}>Open</option>
-                                              <option value={"option2"}>Close</option>
-                                              <option value={"option5"}>Under Process</option>
+                                              <option value={"Open"}>Open</option>
+                                              <option value={"Close"}>Close</option>
+                                              <option value={"Under Process"}>Under Process</option>
                                             </select>
                                           </FormGroup>
                                         </Col>
@@ -342,24 +484,26 @@ const Profile = () => {
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label">Feedback Status<span className="required-marker" >*</span> </Label>
-                                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                            <select id="option" className="form-control-alternative" name="feedback_status" onChange={(e) => setFeedbackValues({ ...feedbackvalues, feedback_status: e.target.value })} >
                                               <option value={""}>Feedback Status</option>
-                                              <option value={"option1"}>Feedback</option>
-                                              <option value={"option2"}>Call Not Received</option>
-                                              <option value={"option5"}>sale</option>
+                                              <option value={"Feedback"}>Feedback</option>
+                                              <option value={"Call Not Received"}>Call Not Received</option>
+                                              <option value={"sale"}>sale</option>
                                             </select>
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* reminder date and time */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label"> Set Reminder Date</Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="Message"
+                                              name="reminder_date"
                                               type="date"
+                                              onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder_date: e.target.value })}
                                             />
                                           </FormGroup>
                                         </Col>
@@ -369,22 +513,25 @@ const Profile = () => {
                                             <Label for="exampleEmail" className="feedback-modal-label">Set Reminder Time</Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="MailText"
+                                              name="reminder_time"
                                               type="time"
+                                              onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder_time: e.target.value })}
                                             />
                                           </FormGroup>
                                         </Col>
                                       </Row>
 
+                                      {/* reminder remark and doctor comments */}
                                       <Row>
                                         <Col md={6}>
                                           <FormGroup>
                                             <Label for="exampleEmail" className="feedback-modal-label"> Reminder Remark<span className="required-marker" >*</span> </Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="Message"
+                                              name="reminder"
                                               placeholder="Type Your Remark Here"
                                               type="textarea"
+                                              onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder: e.target.value })}
                                             />
                                           </FormGroup>
                                         </Col>
@@ -394,20 +541,21 @@ const Profile = () => {
                                             <Label for="exampleEmail" className="feedback-modal-label"> Doctor Comments/ Remark<span className="required-marker" >*</span> </Label>
                                             <Input
                                               id="exampleAddress"
-                                              name="MailText"
+                                              name="doctor_comments"
                                               placeholder="Type Your Comment Here"
                                               type="textarea"
+                                              onChange={(e) => setFeedbackValues({ ...feedbackvalues, doctor_comments: e.target.value })}
                                             />
                                           </FormGroup>
                                         </Col>
                                       </Row>
+                                      <div className="modal-footer">
+                                        <button type="submit" className="btn btn-primary">Save changes</button>
+                                      </div>
                                     </Form>
                                   </div>
 
-                                  <div className="modal-footer">
-                                    <button type="button" className="btn btn-primary">Save changes</button>
-                                  </div>
-
+                                  {/* show all the table data */}
                                   <Table className="align-items-center table-flush" responsive>
                                     <thead className="table-thead-main-body">
                                       <tr className="table-thead-tr-headings">
@@ -422,18 +570,36 @@ const Profile = () => {
                                         <th scope="col">Added By</th>
                                       </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody style={{ border: "1px solid black" }}>
+                                      {userdata2.map((user, i) => {
+                                        return (
+                                          <tr className="text-center" key={i}>
+                                            <td className="table-tr-th-border"><Button className="table-td-contact">{user.ordernumber}</Button></td>
+                                            <td className="table-tr-th-border">{user.name}</td>
+                                            <td className="table-tr-th-border">{user.message}</td>
+                                            <td className="table-tr-th-border">{user.message_reply}</td>
+                                            <td className="table-tr-th-border">{user.doctor_comments}</td>
+                                            <td className="table-tr-th-border">{user.feedback_status}</td>
+                                            <td className="table-tr-th-border">{user.status}</td>
+                                            <td className="table-tr-th-border">{user.date}</td>
+                                            <td className="table-tr-th-border"><Button className="table-td-createby">{user.add_by}</Button></td>
+                                          </tr>
+                                        )
+                                      })
+                                      }
                                     </tbody>
                                   </Table>
 
                                   <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
                                   </div>
-
                                 </div>
                               </div>
                             </div>
+
                           </td>
+                          {/* FeedBack Form Modal  ends here */}
+
                           <td className="table-tr-th-border"> {conertToAsiaTime(user.reminder_date)}</td>
                           <td className="table-tr-th-border">{user.ordernumber}</td>
                           <td className="table-tr-th-border">{user.name}</td>
@@ -451,6 +617,9 @@ const Profile = () => {
                     })}
                   </tbody>
                 </Table>
+
+                <CustomPagination totalPages={Math.ceil(totalRecords / (selectedOptionrecordPerPage || 25))} currentPage={currentPage} onPageChange={changeCPage} />
+
               </CardBody>
             </Card>
           </Col>

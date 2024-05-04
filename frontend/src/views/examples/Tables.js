@@ -3,6 +3,7 @@ import { Button, Card, CardHeader, CardBody, FormGroup, Form, Input, Container, 
 import Header from "components/Headers/Header.js";// core components
 import axios from "axios";
 import "../../assets/css/profile.css";
+import CustomPagination from "./CustomPagination";
 
 
 const Tables = () => {
@@ -11,38 +12,75 @@ const Tables = () => {
     setSelectedDate(event.target.value);
   };
 
-  // for option employee field
-  const [selectedOption, setSelectedOption] = useState("");
-  const handleChange = (event) => {
-    setSelectedOption(event.target.value);
-  };
-
-  useEffect(() => {
-    fetchdata();
-  }, [])
-
-  const [userdata, setUserdata] = useState([]);
-  const fetchdata = async () => {
-    try {
-      const result = await axios('http://localhost:5000/customer-feedback');
-      setUserdata(result.data);
-    } catch (error) {
-      console.log("error occures in fetching customer-feedback data" + error.stack);
-    }
-  }
-
-  const conertToAsiaTime = (utcTimestamp) =>{
+  const conertToAsiaTime = (utcTimestamp) => {
     const date = new Date(utcTimestamp);
     const options = {
       timeZone: 'Asia/Kolkata',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      hour:'2-digit',
-      minute:'2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
     };
-    return date.toLocaleString('en-US' , options).replace(/\//g,'-');
+    return date.toLocaleString('en-US', options).replace(/\//g, '-');
   }
+
+  // Pagination
+  const [userdata, setUserdata] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0); // Initialize totalRecords state
+  const [currentPage, setCurrentPage] = useState(1);
+
+
+  useEffect(() => {
+    // Retrieve the current page from local storage if available
+    const savedPage = localStorage.getItem('currentPage');
+    if (savedPage) {
+      setCurrentPage(parseInt(savedPage));
+    } else {
+      setCurrentPage(1); // Default to page 1 if not found in local storage
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchdata();
+  }, [currentPage]);
+
+  // for option to filter data showing rows field
+  const [selectedOptionrecordPerPage, setSelectedOptionrecordPerPage] = useState("");
+  const handleChange = (event) => {
+    setSelectedOptionrecordPerPage(event.target.value);
+  };
+
+
+  const handlesubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    try {
+      await fetchdata(); // Fetch data using the selected option
+    } catch (error) {
+      console.error('Error occurred while fetching data:', error);
+    }
+  };
+
+  // route for showing data of All-orders-manage
+  const fetchdata = async () => {
+    try {
+      const result = await axios(`http://localhost:5000/customer-feedback?page=${currentPage}&limit=${selectedOptionrecordPerPage}`);
+      setUserdata(result.data.data);
+      setTotalRecords(result.data.totalRecords);
+    }
+    catch (err) {
+      console.log('error cocured in fetching axios from reminder' + err.stack);
+    }
+  }
+
+  const changeCPage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+
+  useEffect(() => {
+    localStorage.setItem('currentPage', currentPage);
+  }, [currentPage]);
 
   return (
     <>
@@ -63,36 +101,36 @@ const Tables = () => {
                 </Row>
               </CardHeader>
               <CardBody>
-                <Form>
-                  <div className="pl-lg-4">
-                    <Row className="form-control-main-section">
-                      <Col lg="2">
+                <div className="pl-lg-4">
+                  <Row className="form-control-main-section">
+                    <Col lg="2">
+                      <Form onSubmit={handlesubmit}>
                         <FormGroup>
                           <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
                           <div style={{ display: "flex" }}>
-                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
-                              <option value={""}>25</option>
-                              <option value={"option1"}>50</option>
-                              <option value={"option2"}>100</option>
-                              <option value={"option3"}>150</option>
-                              <option value={"option4"}>200</option>
-                              <option value={"option5"}>250</option>
+                            <select id="option" value={selectedOptionrecordPerPage} onChange={handleChange} className="form-control-alternative">
+                              <option value={25}>25</option>
+                              <option value={50}>50</option>
+                              <option value={100}>100</option>
+                              <option value={150}>150</option>
+                              <option value={200}>200</option>
+                              <option value={250}>250</option>
                             </select>
-                            <Button className="form-control-table-inner-button">Go </Button>
+                            <Button type="submit" className="form-control-table-inner-button">Go</Button>
                           </div>
                         </FormGroup>
-                      </Col>
-                      <Col lg="4" style={{ position: " absolute", right: "0%" }}>
-                        <FormGroup className="form-control-outer-search" style={{ marginTop: "32px" }}>
-                          <div className="form-control-search" style={{ display: "flex" }} >
-                            <Input className="form-control-alternative" placeholder="Type Here To Search" />
-                            <Button type="submit" className="form-control-table-inner-button">Submit</Button>
-                          </div>
-                        </FormGroup>
-                      </Col>
-                    </Row>
-                  </div>
-                </Form>
+                      </Form>
+                    </Col>
+                    <Col lg="4" style={{ position: " absolute", right: "0%" }}>
+                      <FormGroup className="form-control-outer-search" style={{ marginTop: "32px" }}>
+                        <div className="form-control-search" style={{ display: "flex" }} >
+                          <Input className="form-control-alternative" placeholder="Type Here To Search" />
+                          <Button type="submit" className="form-control-table-inner-button">Submit</Button>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                </div>
                 <hr />
                 <Table className="align-items-center table-flush" responsive>
                   <thead className="table-thead-main-body">
@@ -124,7 +162,7 @@ const Tables = () => {
                     {userdata.map((user, i) => {
                       return (
                         <tr className="text-center" key={i}>
-                          <td className="table-tr-th-border" scope="row">{user.id}</td>
+                          <td className="table-tr-th-border" scope="row">{i + 1}</td>
                           <td className="table-tr-th-border"><Button className="table-tr-td-doctor-comments" ><i className="fa fa-comments" /></Button></td>
                           <td className="table-tr-th-border">{user.message_reply}</td>
                           <td className="table-tr-th-border">{user.order_id}</td>
@@ -150,6 +188,9 @@ const Tables = () => {
                     })}
                   </tbody>
                 </Table>
+
+                <CustomPagination totalPages={Math.ceil(totalRecords / (selectedOptionrecordPerPage || 25))} currentPage={currentPage} onPageChange={changeCPage} />
+
               </CardBody>
             </Card>
           </Col>

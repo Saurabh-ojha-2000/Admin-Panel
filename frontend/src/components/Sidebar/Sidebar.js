@@ -63,9 +63,9 @@ const createLinks = (routes) => {
       <Container fluid>
         {/* Brand */}
         {logo ? (<NavbarBrand className="pt-0">
-          <img alt={logo.imgAlt} className="navbar-brand-img" src={require("../../assets/img/brand/logo.png")} />
+          <img alt={logo.imgAlt} className="main-logo-sidebar" id ="main-logo-sidebar" src={require("../../assets/img/brand/photo-1560930253678-crm-development-company.png")} />
         </NavbarBrand>) : null}
-        <div className="sidebar-dashboard">DASHBOARD</div>
+        <div className="sidebar-dashboard">ADMIN DASHBOARD</div>
 
 
         {/* User */}

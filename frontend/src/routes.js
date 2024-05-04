@@ -46,7 +46,7 @@ var routes = [
         layout: "/admin",
       },
       {
-        path: "/follow-up-service-cal",
+        path: "/follow-up-service-call",
         name: "Follow up/Service-call",
         icon: "fa-solid fa-circle-chevron-right text-primary",
         component: <FollowupServiceCall />,

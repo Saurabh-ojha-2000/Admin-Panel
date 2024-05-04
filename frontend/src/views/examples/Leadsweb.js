@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, CardHeader, CardBody, Form, Progress, Table, Container, Row, Col, FormGroup, Input, Label } from "reactstrap";
 import Header from "components/Headers/Header.js"; // header 
 import axios from "axios";
+import CustomPagination from "./CustomPagination";
+
 function Leadsweb() {
   const [selectedDate, setSelectedDate] = useState("");
   const handleDateChange = (event) => {
@@ -10,26 +12,13 @@ function Leadsweb() {
 
   // for option employee field
   const [selectedOption, setSelectedOption] = useState("");
-  const handleChange = (event) => {
+  const handleChange1 = (event) => {
     setSelectedOption(event.target.value);
   };
 
   useEffect(() => {
-    fetch_leads_fbweb_data();
     fetch_lead_fbweb_purchasetime();
   }, [])
-
-  const [leadfbwebdata, setLeadfbwebdata] = useState([]);
-  const fetch_leads_fbweb_data = async () => {
-    try {
-      const csresult = await axios('http://localhost:5000/lead-fb-web');
-      console.log(csresult);
-      setLeadfbwebdata(csresult.data);
-    }
-    catch (err) {
-      console.log("error occured in fetching api of call-form ");
-    }
-  }
 
   const [userdata, setUserdata] = useState([]);
   const fetch_lead_fbweb_purchasetime = async () => {
@@ -41,6 +30,75 @@ function Leadsweb() {
       console.log("error fetching in api of Index from database" + err.stack);
     }
   };
+
+
+  // Pagination
+  const [leadfbwebdata, setLeadfbwebdata] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0); // Initialize totalRecords state
+  const [currentPage, setCurrentPage] = useState(1);
+
+
+  useEffect(() => {
+    // Retrieve the current page from local storage if available
+    const savedPage = localStorage.getItem('currentPage');
+    if (savedPage) {
+      setCurrentPage(parseInt(savedPage));
+    } else {
+      setCurrentPage(1); // Default to page 1 if not found in local storage
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchdata();
+  }, [currentPage]);
+
+  // for option to filter data showing rows field
+  const [selectedOptionrecordPerPage, setSelectedOptionrecordPerPage] = useState("");
+  const handleChange = (event) => {
+    setSelectedOptionrecordPerPage(event.target.value);
+  };
+
+  const handlesubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    try {
+      await fetchdata(); // Fetch data using the selected option
+    } catch (error) {
+      console.error('Error occurred while fetching data:', error);
+    }
+  };
+
+  // route for showing data of lead-fb-web-manage
+
+  const fetchdata = async () => {
+    try {
+      const result = await axios(`http://localhost:5000/lead-fb-web?page=${currentPage}&limit=${selectedOptionrecordPerPage}`);
+      setLeadfbwebdata(result.data.data);
+      setTotalRecords(result.data.totalRecords);
+    }
+    catch (err) {
+      console.log('error cocured in fetching axios from reminder' + err.stack);
+    }
+  }
+
+  const changeCPage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  useEffect(() => {
+    localStorage.setItem('currentPage', currentPage);
+  }, [currentPage]);
+
+  // route for showing data of purchaseTime from purchaseTime route and tbl_payment_orders table
+  const [purchaseTimeData, setPurchaseTimeData] = useState([]);
+  const setPurchaseTime = async (phonenumber) => {
+    try {
+      const result = await axios.get(`http://localhost:5000/purchaseTime?contact=${phonenumber}`);
+      setPurchaseTimeData(result.data);
+    } catch (error) {
+      console.log("error occured int fetching data of purchase time", err.stack);
+    }
+  }
+
 
   return (
     <>
@@ -67,9 +125,8 @@ function Leadsweb() {
                           <Input
                             id="exampleAddress"
                             name="address"
-                            placeholder="1234 Main St"
+                            placeholder="9210XXXXXX"
                             type="number"
-                            value={9886558888}
                           />
                         </FormGroup>
                       </Col>
@@ -77,7 +134,7 @@ function Leadsweb() {
                       <Col md={6}>
                         <FormGroup>
                           <Label for="exampleEmail" className="feedback-modal-label"> Status<span className="required-marker" >*</span> </Label>
-                          <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                          <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
                             <option value={""}>Select</option>
                             <option value={"option1"}>Sale </option>
                             <option value={"option2"}>FollowUp</option>
@@ -94,7 +151,7 @@ function Leadsweb() {
                       <Col md={6}>
                         <FormGroup>
                           <Label for="exampleEmail" className="feedback-modal-label">Leads Source</Label>
-                          <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                          <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
                             <option value={"option1"}>web whatsapp </option>
                             <option value={"option2"}>FB</option>
                           </select>
@@ -113,44 +170,44 @@ function Leadsweb() {
                         </FormGroup>
                       </Col>
                     </Row>
+
+                    <div className="modal-footer" style={{ justifyContent: 'center' }}>
+                      <button type="submit" className="btn btn-primary">Submit</button>
+                    </div>
                   </Form>
                 </div>
 
-                <div className="modal-footer" style={{ justifyContent: 'center' }}>
-                  <button type="button" className="btn btn-primary">Submit</button>
-                </div>
-
                 <hr />
-                <Form>
-                  <div className="pl-lg-4">
-                    <Row className="form-control-main-section">
-                      <Col lg="2">
+                <div className="pl-lg-4">
+                  <Row className="form-control-main-section">
+                    <Col lg="2">
+                      <Form onSubmit={handlesubmit}>
                         <FormGroup>
                           <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
                           <div style={{ display: "flex" }}>
-                            <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
-                              <option value={""}>25</option>
-                              <option value={"option1"}>50</option>
-                              <option value={"option2"}>100</option>
-                              <option value={"option3"}>150</option>
-                              <option value={"option4"}>200</option>
-                              <option value={"option5"}>250</option>
+                            <select id="option" value={selectedOptionrecordPerPage} onChange={handleChange} className="form-control-alternative">
+                              <option value={25}>25</option>
+                              <option value={50}>50</option>
+                              <option value={100}>100</option>
+                              <option value={150}>150</option>
+                              <option value={200}>200</option>
+                              <option value={250}>250</option>
                             </select>
-                            <Button className="form-control-table-inner-button">Go </Button>
+                            <Button type="submit" className="form-control-table-inner-button">Go</Button>
                           </div>
                         </FormGroup>
-                      </Col>
-                      <Col lg="4" style={{ position: " absolute", right: "0%" }}>
-                        <FormGroup className="form-control-outer-search" style={{ marginTop: "32px" }}>
-                          <div className="form-control-search" style={{ display: "flex" }} >
-                            <Input className="form-control-alternative" placeholder="Type Here To Search" />
-                            <Button type="submit" className="form-control-table-inner-button">Search    </Button>
-                          </div>
-                        </FormGroup>
-                      </Col>
-                    </Row>
-                  </div>
-                </Form>
+                      </Form>
+                    </Col>
+                    <Col lg="4" style={{ position: " absolute", right: "0%" }}>
+                      <FormGroup className="form-control-outer-search" style={{ marginTop: "32px" }}>
+                        <div className="form-control-search" style={{ display: "flex" }} >
+                          <Input className="form-control-alternative" placeholder="Type Here To Search" />
+                          <Button type="submit" className="form-control-table-inner-button">Search    </Button>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                </div>
                 <Table className="align-items-center table-flush" responsive>
                   <thead className="table-thead-main-body">
                     <tr className="table-thead-tr-headings text-center">
@@ -172,7 +229,77 @@ function Leadsweb() {
                           <th className="table-tr-th-border" scope="row" >{i + 1}</th>
                           <td className="table-tr-th-border"><Button className="table-td-contact">{user.number}</Button></td>
                           <td className="table-tr-th-border"><Button className="table-td-action p-1">{user.source}</Button></td>
-                          <td className="table-tr-th-border"><Button className="table-td-purchase-time btn btn-secondary">{userdata[i]?.no_purchasetime || 0}</Button></td>
+
+                          {/* Purchase Time Modal  Starts here */}
+                          <td className="table-tr-th-border">
+                            {/* <!-- Button trigger modal --> */}
+                            <Button type="button" className="table-td-purchase-time" data-bs-toggle="modal"
+                              data-bs-target={`#exampleModal1-${i}`} style={{ backgroundColor: "#4141e7", color: "white" }}
+                              onClick={() => {
+                                setPurchaseTime(user?.number)
+                              }}
+                            >
+                              <i className="fa-solid fa-business-time"></i>
+                            </Button>
+
+                            {/* <!-- Modal --> */}
+
+                            <div className="modal fade" id={`exampleModal1-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel1-${i}`} aria-hidden="true">
+                              <div className="modal-dialog modal-xl">
+                                <div className="modal-content">
+                                  <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
+                                    <h1 className="modal-title fs-8" id={`exampleModalLabel1-${i}`}>Order Summary</h1>
+                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <h1 className="modal-title fs-5" id={`exampleModalLabel1-${i}`} style={{ textAlign: "center", margin: "20px" }}>
+                                    Customer All Previous  Orders For <strong><i>{user.number}</i></strong></h1>
+                                  <hr style={{ width: "40%", margin: "0 auto" }} />
+                                  <div className="modal-body">
+
+                                    {Array.isArray(purchaseTimeData) && purchaseTimeData.map((pt, i) => {
+                                      return (
+                                        <React.Fragment key={i}>
+                                          <div className="element-index-heading" key={i}>Order Summary<strong>{pt.number}</strong></div>
+
+                                          <Table className="align-items-center table-flush" responsive>
+                                            <tbody style={{ border: "1px solid black" }}>
+                                              <tr className="table-thead-tr-headings table-thead-main-body">
+                                                <th scope="col" style={{ border: "1px solid black" }}>Image</th>
+                                                <th scope="col" style={{ border: "1px solid black" }}>Product Name</th>
+                                                <th scope="col" style={{ border: "1px solid black" }}>Price</th>
+                                                <th scope="col" style={{ border: "1px solid black" }}>QTY</th>
+                                                <th scope="col" style={{ border: "1px solid black" }}>Date</th>
+                                                <th scope="col" style={{ border: "1px solid black" }}>Total Amount</th>
+                                              </tr>
+
+                                              <tr className="text-center" key={i}>
+                                                <td className="table-tr-th-border"> <img src={require(`../../assets/img/theme/${pt.invoice_image}`)} alt="loading"></img></td>
+                                                <td className="table-tr-th-border">{pt.product_item} </td>
+                                                <td className="table-tr-th-border">{pt.p_price} </td>
+                                                <td className="table-tr-th-border">{pt.total_quantity}</td>
+                                                <td className="table-tr-th-border">{pt.date_pay}</td>
+                                                <td className="table-tr-th-border">{pt.amount}</td>
+                                              </tr>
+
+                                            </tbody>
+                                          </Table>
+
+                                        </React.Fragment>
+                                      )
+                                    })}
+                                  </div>
+
+                                  <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                  </div>
+
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          {/* Purchase Time Modal  ends here */}
+
+
                           <td className="table-tr-th-border">{user.message}</td>
                           <td className="table-tr-th-border">{user.add_by}</td>
                           <td className="table-tr-th-border"><Button className="table-td-createby">{user.status}</Button></td>
@@ -185,14 +312,15 @@ function Leadsweb() {
                             </Button>
 
                             {/* <!-- Modal --> */}
-                            <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                               <div className="modal-dialog modal-xl">
                                 <div className="modal-content">
                                   <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
                                     <h1 className="modal-title fs-8" id="exampleModalLabel">FeedBack</h1>
                                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                   </div>
-                                  <h1 className="modal-title fs-5" id="exampleModalLabel" style={{ textAlign: "center", margin: "20px" }}>Customer Support Queries Order No.55301
+                                  <h1 className="modal-title fs-5" id="exampleModalLabel" style={{ textAlign: "center", margin: "20px" }}>Customer Support Queries Related To- <b>{user.number}</b>
+
                                   </h1>
                                   <hr style={{ width: "40%", margin: "0 auto" }} />
                                   <div className="modal-body">
@@ -205,9 +333,8 @@ function Leadsweb() {
                                               <Input
                                                 id="exampleAddress"
                                                 name="address"
-                                                placeholder="1234 Main St"
+                                                placeholder="9210XXXXXX"
                                                 type="number"
-                                                value={9886558888}
                                               />
                                             </FormGroup>
                                           </Col>
@@ -215,7 +342,7 @@ function Leadsweb() {
                                           <Col md={6}>
                                             <FormGroup>
                                               <Label for="exampleEmail" className="feedback-modal-label"> Status<span className="required-marker" >*</span> </Label>
-                                              <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                              <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
                                                 <option value={""}>Select</option>
                                                 <option value={"option1"}>Sale </option>
                                                 <option value={"option2"}>FollowUp</option>
@@ -232,7 +359,7 @@ function Leadsweb() {
                                           <Col md={6}>
                                             <FormGroup>
                                               <Label for="exampleEmail" className="feedback-modal-label">Leads Source</Label>
-                                              <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                              <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
                                                 <option value={"option1"}>web whatsapp </option>
                                                 <option value={"option2"}>FB</option>
                                               </select>
@@ -251,13 +378,13 @@ function Leadsweb() {
                                             </FormGroup>
                                           </Col>
                                         </Row>
+
+                                        <div className="modal-footer">
+                                          <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                          <button type="submit" className="btn btn-primary">Submit</button>
+                                        </div>
                                       </Form>
                                     </div>
-                                    <div className="modal-footer">
-                                      <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
-                                      <button type="button" className="btn btn-primary">Submit</button>
-                                    </div>
-
                                   </div>
                                 </div>
                               </div>
@@ -268,6 +395,9 @@ function Leadsweb() {
                     })}
                   </tbody>
                 </Table>
+
+                <CustomPagination totalPages={Math.ceil(totalRecords / (selectedOptionrecordPerPage || 25))} currentPage={currentPage} onPageChange={changeCPage} />
+
               </CardBody>
             </Card>
           </Col>

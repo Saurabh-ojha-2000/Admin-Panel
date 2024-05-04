@@ -7,7 +7,7 @@ const AdminNavbar = () => {
     <>
       <Navbar className="navbar-top navbar-horizontal navbar-dark" expand="md">
         <Container className="px-4">
-          <NavbarBrand to="/" tag={Link}>
+          <NavbarBrand >
             <img alt="..." src={require("../../assets/img/brand/image.png")} height={"400px"} width={"100px"} style={{ height: "70px" }} />
           </NavbarBrand>
           <button className="navbar-toggler" id="navbar-collapse-main">
@@ -18,10 +18,7 @@ const AdminNavbar = () => {
               <Row>
                 <Col className="collapse-brand" xs="6">
                   <Link to="/">
-                    <img
-                      alt="..."
-                      src={require("../../assets/img/brand/argon-react.png")}
-                    />
+                    <img alt="..." src={require("../../assets/img/brand/image.png")} />
                   </Link>
                 </Col>
                 <Col className="collapse-close" xs="6">

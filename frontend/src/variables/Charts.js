@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { data } from 'jquery';
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 
@@ -38,6 +37,7 @@ function LineChart() {
         const fetchData = async () => {
             try {
                 const result = await axios.get('http://localhost:5000/order-chart');
+                // console.log("chart data is:",result);
                 const labels = result.data.map(item => {
                     const monthIndex = parseInt(item.month) - 1; // Month index starts from 0
                     return new Date(2024, monthIndex).toLocaleString('default', { month: 'long' });
@@ -73,7 +73,7 @@ function LineChart() {
                         yAxes: [{
                             ticks: {
                                 beginAtZero: true,
-                                stepSize: 10 // Set the distance between ticks to 10
+                                stepSize: 200 // Set the distance between ticks to 10
                             },
                             gridLines: {
                                 color: colors.gray[300] // Using gray color 300 for grid lines

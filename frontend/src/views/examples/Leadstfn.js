@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Button, Card, CardHeader, CardBody, Form, Table, Container, Row, Col, FormGroup, Input, Label } from "reactstrap";
 import Header from "components/Headers/Header.js"; // header 
 import axios from "axios";
+import CustomPagination from "./CustomPagination";
+
 function Leadstfn() {
 
     const conertToAsiaTime = (utcTimestamp) => {
@@ -25,25 +27,70 @@ function Leadstfn() {
 
     // for option employee field
     const [selectedOption, setSelectedOption] = useState("");
-    const handleChange = (event) => {
+    const handleChange1 = (event) => {
         setSelectedOption(event.target.value);
     };
 
     useEffect(() => {
-        fetch_leadtfn_data();
         fetch_lead_remark_data();
     }, [])
 
-    const [leadata, setLeadata] = useState([]);
-    const fetch_leadtfn_data = async () => {
+    // Pagination
+    const [userdata, setUserdata] = useState([]);
+    const [totalRecords, setTotalRecords] = useState(0); // Initialize totalRecords state
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        // Retrieve the current page from local storage if available
+        const savedPage = localStorage.getItem('currentPage');
+        if (savedPage) {
+            setCurrentPage(parseInt(savedPage));
+        } else {
+            setCurrentPage(1); // Default to page 1 if not found in local storage
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchdata();
+    }, [currentPage]);
+
+    // for option to filter data showing rows field
+    const [selectedOptionrecordPerPage, setSelectedOptionrecordPerPage] = useState("");
+    const handleChange = (event) => {
+        setSelectedOptionrecordPerPage(event.target.value);
+    };
+
+    const handlesubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
         try {
-            const csresult = await axios('http://localhost:5000/leadstfn');
-            setLeadata(csresult.data);
+            await fetchdata(); // Fetch data using the selected option
+        } catch (error) {
+            console.error('Error occurred while fetching data:', error);
+        }
+    };
+
+    // route for showing data of Leadstfn-manage
+
+    const fetchdata = async () => {
+        try {
+            const result = await axios(`http://localhost:5000/leadstfn?page=${currentPage}&limit=${selectedOptionrecordPerPage}`);
+            setUserdata(result.data.data);
+            setTotalRecords(result.data.totalRecords);
         }
         catch (err) {
-            console.log("error occured in fetching api of call-form ");
+            console.log('error cocured in fetching axios from reminder' + err.stack);
         }
     }
+
+    const changeCPage = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    useEffect(() => {
+        localStorage.setItem('currentPage', currentPage);
+    }, [currentPage]);
+
+
 
     const [leadremark, setLeadremark] = useState([]);
     const fetch_lead_remark_data = async () => {
@@ -71,51 +118,59 @@ function Leadstfn() {
                                 </Row>
                             </CardHeader>
                             <CardBody>
-                                <Form>
-                                    <div className="pl-lg-4">
-                                        <Row className="form-control-main-section">
-                                            <Col lg="2">
+                                <div className="pl-lg-4">
+                                    <Row className="form-control-main-section">
+                                        <Col lg="2">
+                                            <Form onSubmit={handlesubmit}>
                                                 <FormGroup>
                                                     <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
                                                     <div style={{ display: "flex" }}>
-                                                        <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
-                                                            <option value={""}>25</option>
-                                                            <option value={"option1"}>50</option>
-                                                            <option value={"option2"}>100</option>
-                                                            <option value={"option3"}>150</option>
-                                                            <option value={"option4"}>200</option>
-                                                            <option value={"option5"}>250</option>
+                                                        <select id="option" value={selectedOptionrecordPerPage} onChange={handleChange} className="form-control-alternative">
+                                                            <option value={25}>25</option>
+                                                            <option value={50}>50</option>
+                                                            <option value={100}>100</option>
+                                                            <option value={150}>150</option>
+                                                            <option value={200}>200</option>
+                                                            <option value={250}>250</option>
                                                         </select>
-                                                        <Button className="form-control-table-inner-button">Go </Button>
+                                                        <Button type="submit" className="form-control-table-inner-button">Go</Button>
                                                     </div>
                                                 </FormGroup>
-                                            </Col>
-                                            <Col lg="2">
-                                                <FormGroup>
-                                                    <label className="form-control-label" htmlFor="input-date">From Date:</label>
-                                                    <Input type="date" placeholder="dd/mm/yyyy" className="form-control-alternative" value={selectedDate} onChange={handleDateChange} />
-                                                    {selectedDate}
-                                                </FormGroup>
-                                            </Col>
-                                            <Col lg="2">
-                                                <FormGroup>
-                                                    <label className="form-control-label" htmlFor="input-date">To Date:</label>
-                                                    <Input type="date" className="form-control-alternative" value={selectedDate} onChange={handleDateChange} placeholder="dd/mm/yyyy" />
-                                                </FormGroup>
-                                            </Col>
-                                            <Col lg="2">
-                                                <FormGroup>
-                                                    <label className="form-control-label" htmlFor="input-search">Search</label>
-                                                    <Input type="search" className="form-control-alternative" placeholder="Name, Mobile No., Order ID" />
-                                                </FormGroup>
-                                            </Col>
-                                            <Col >
-                                                <Button className="form-control-table-inner-button-leads-tfn" style={{ backgroundColor: 'blue' }}>Submit </Button>
-                                                <Button className="form-control-table-inner-button-leads-tfn" style={{ backgroundColor: '#03A63C' }}>Refresh Page </Button>
-                                            </Col>
-                                        </Row>
-                                    </div>
-                                </Form>
+                                            </Form>
+                                        </Col>
+
+                                        <Col lg="2">
+                                            <FormGroup>
+                                                <label className="form-control-label" htmlFor="input-date">From Date:</label>
+                                                <Input type="date"
+                                                    placeholder="dd/mm/yyyy"
+                                                    className="form-control-alternative"
+                                                    defaultValue={selectedDate}
+                                                    onChange={handleDateChange} />
+                                                {selectedDate}
+                                            </FormGroup>
+                                        </Col>
+                                        <Col lg="2">
+                                            <FormGroup>
+                                                <label className="form-control-label" htmlFor="input-date">To Date:</label>
+                                                <Input type="date" className="form-control-alternative"
+                                                    defaultValue={selectedDate}
+                                                    onChange={handleDateChange} placeholder="dd/mm/yyyy" />
+                                            </FormGroup>
+                                        </Col>
+                                        <Col lg="2">
+                                            <FormGroup>
+                                                <label className="form-control-label" htmlFor="input-search">Search</label>
+                                                <Input type="search" className="form-control-alternative" placeholder="Name, Mobile No., Order ID" />
+                                            </FormGroup>
+                                        </Col>
+                                        <Col >
+                                            <Button className="form-control-table-inner-button-leads-tfn" style={{ backgroundColor: 'blue' }}>Submit </Button>
+                                            <Button className="form-control-table-inner-button-leads-tfn" style={{ backgroundColor: '#03A63C' }}>Refresh Page </Button>
+                                        </Col>
+
+                                    </Row>
+                                </div>
                                 <hr />
                                 <Table className="align-items-center table-flush" responsive>
                                     <thead className="table-thead-main-body">
@@ -135,14 +190,14 @@ function Leadstfn() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {leadata.map((user, i) => {
+                                        {userdata.map((user, i) => {
                                             return (
                                                 <tr className="text-center" key={i}     >
                                                     <th className="table-tr-th-border" scope="row" >{i + 1}</th>
                                                     <td className="table-tr-th-border"><Button className="table-td-contact">{user.client_number}</Button></td>
                                                     <td className="table-tr-th-border"><Button className="table-td-createby">{user.status}</Button></td>
-                                                    <td className="table-tr-th-border"> {user.service}</td>
-                                                    <td className="table-tr-th-border">{conertToAsiaTime(user.startdatetime)}</td>
+                                                    <td className="table-tr-th-border"> {user.service || '-'}</td>
+                                                    <td className="table-tr-th-border">{conertToAsiaTime(user?.startdatetime || 'NA')}</td>
                                                     <td className="table-tr-th-border">{user.time}</td>
                                                     <td className="table-tr-th-border">{conertToAsiaTime(user.end_stamp)}</td>
                                                     <td className="table-tr-th-border"><Button className="table-td-purchase-time">{user?.call_duration || 0} </Button></td>
@@ -157,7 +212,7 @@ function Leadstfn() {
                                                         </Button>
 
                                                         {/* <!-- Modal --> */}
-                                                        <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                                             <div className="modal-dialog modal-xl">
                                                                 <div className="modal-content">
                                                                     <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
@@ -174,17 +229,17 @@ function Leadstfn() {
                                                                                         <Input
                                                                                             id="exampleAddress"
                                                                                             name="address"
-                                                                                            placeholder="1234 Main St"
+                                                                                            placeholder="9210XXXXXX"
                                                                                             type="number"
-                                                                                            value={9886558888}
+                                                                                            // defaultValue={user.client_number}
                                                                                         />
-                                                                                    </FormGroup>
+                                                                                    </FormGroup>    
                                                                                 </Col>
 
                                                                                 <Col md={6}>
                                                                                     <FormGroup>
                                                                                         <Label for="exampleEmail" className="feedback-modal-label"> Status<span className="required-marker" >*</span> </Label>
-                                                                                        <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
+                                                                                        <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
                                                                                             <option value={""}>Select</option>
                                                                                             <option value={"option1"}>Call disconnect by customer after Opening</option>
                                                                                             <option value={"option2"}>Repeat</option>
@@ -269,11 +324,14 @@ function Leadstfn() {
                                         }
                                     </tbody>
                                 </Table>
+
+                                <CustomPagination totalPages={Math.ceil(totalRecords / (selectedOptionrecordPerPage || 25))} currentPage={currentPage} onPageChange={changeCPage} />
+
                             </CardBody>
                         </Card>
                     </Col>
                 </div>
-            </Container>
+            </Container >
         </>
     );
 };

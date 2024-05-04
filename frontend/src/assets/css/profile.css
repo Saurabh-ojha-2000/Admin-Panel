@@ -35,3 +35,13 @@
 .profile-section-table-heading {
     border: 2px solid black;
 }
+.pagination{
+  justify-content: center;
+  margin-top: 10px;
+}
+.element-index-heading {
+  position: relative;
+  font-size: large;
+  margin: 10px;
+  background-color: antiquewhite;
+}

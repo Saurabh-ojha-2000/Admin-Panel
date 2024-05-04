@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Card, CardHeader, CardBody, Progress, Table, Container, Row, Col, FormGroup, Input, Form, Label } from "reactstrap";
 import Header from "components/Headers/Header.js"; // header 
+import CustomPagination from "./CustomPagination";
+import axios from "axios";
 // import "../assets/css/dashboard.css" //css file
 
 const Index = (props) => {
@@ -9,11 +11,76 @@ const Index = (props) => {
         setSelectedDate(event.target.value);
     };
 
-    // for option employee field
-    const [selectedOption, setSelectedOption] = useState("");
-    const handleChange = (event) => {
-        setSelectedOption(event.target.value);
+    
+  // for option to filter data showing rows field
+  const [selectedOptionrecordPerPage, setSelectedOptionrecordPerPage] = useState("");
+  const handleChange = (event) => {
+    setSelectedOptionrecordPerPage(event.target.value);
+  };
+
+
+  const handlesubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    try {
+      await fetchcustomerdata(); // Fetch data using the selected option
+    } catch (error) {
+      console.error('Error occurred while fetching data:', error);
+    }
+  };
+
+//   useEffect(() => {
+//     fetchcustomerdata();
+//   }, [currentPage])
+
+//   // route for showing data of Re-orders-manage from index route and tbl_payment_orders table
+//   const fetchcustomerdata = async () => {
+//     try {
+//       const result = await axios.get(`http://localhost:5000/Index?page=${currentPage}&limit=${selectedOptionrecordPerPage}`);
+//       setUserdata(result.data.data);
+//       setTotalRecords(result.data.totalRecords);
+//     } catch (err) {
+//       console.log("error fetching in api of Index from database", err.stack);
+//     }
+//   };
+
+
+    // Pagination
+    const [userdata, setUserdata] = useState([]);
+    const [totalRecords, setTotalRecords] = useState(0); // Initialize totalRecords state
+    const [currentPage, setCurrentPage] = useState(1);
+
+
+    useEffect(() => {
+        // Retrieve the current page from local storage if available
+        const savedPage = localStorage.getItem('currentPage');
+        if (savedPage) {
+            setCurrentPage(parseInt(savedPage));
+        } else {
+            setCurrentPage(1); // Default to page 1 if not found in local storage
+        }
+    }, []);
+
+    const prePage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
     };
+
+    const changeCPage = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const nextPage = () => {
+        if (currentPage < Math.ceil(totalRecords / recordPerPage)) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    useEffect(() => {
+        localStorage.setItem('currentPage', currentPage);
+    }, [currentPage]);
+
+
 
     return (
         <>
@@ -33,20 +100,24 @@ const Index = (props) => {
                             <div className="pl-lg-4">
                                 <Row className="form-control-main-section">
                                     <Col lg="2">
-                                        <FormGroup>
-                                            <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
-                                            <div style={{ display: "flex" }}>
-                                                <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
-                                                    <option value={""}>25</option>
-                                                    <option value={"option1"}>50</option>
-                                                    <option value={"option2"}>100</option>
-                                                    <option value={"option3"}>150</option>
-                                                    <option value={"option4"}>200</option>
-                                                    <option value={"option5"}>250</option>
-                                                </select>
-                                                <Button className="form-control-table-inner-button">Go </Button>
-                                            </div>
-                                        </FormGroup>
+                                    <Form onSubmit={handlesubmit}>
+                      <FormGroup>
+                        <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
+                        <div style={{ display: "flex" }}>
+                          <select id="option" value={selectedOptionrecordPerPage} onChange={handleChange} className="form-control-alternative">
+                            <option value={25}>25</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={150}>150</option>
+                            <option value={200}>200</option>
+                            <option value={250}>250</option>
+                          </select>
+
+                          <Button type="submit" className="form-control-table-inner-button">Go</Button>
+
+                        </div>
+                      </FormGroup>
+                    </Form>
                                     </Col>
                                     <Col lg="2">
                                         <FormGroup>
@@ -92,6 +163,9 @@ const Index = (props) => {
 
                                 </tbody>
                             </Table>
+
+                            <CustomPagination totalPages={Math.ceil(totalRecords / (selectedOptionrecordPerPage || 25))} currentPage={currentPage} onPageChange={changeCPage} />
+
                         </Card>
                     </Col>
 

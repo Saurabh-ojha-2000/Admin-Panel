@@ -62,7 +62,7 @@ app.post('/login', (req, res) => {
     const sql = 'select * from user where email=?';
 
     db.query(sql, [req.body.email], (err, data) => {
-        console.log(data);
+        // console.log(data);
         if (err) {
             return res.json({ Error: "Error hashing fetching password" });
         }
@@ -115,59 +115,179 @@ app.get("/logout", (req, res) => {
     return res.json({ Status: "Success" });
 })
 
-
 //Index file fetching route
+
 app.get('/Index', (req, res) => {
-    db.query("select * from tbl_payment_orders", (err, result) => {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
+    const offset = (page - 1) * limit;
+
+    db.query(`SELECT COUNT(*) AS total FROM tbl_payment_orders`, (err, countResult) => {
         if (err) {
-            console.error('Error querying Index: ' + err.stack);
+            console.error('Error counting records: ' + err.stack);
             res.status(500).send("Error fetching Index from database");
-        } else {
-            res.send(result);
+            return;
         }
+
+        const totalRecords = countResult[0].total;
+        db.query(`SELECT * FROM tbl_payment_orders ORDER BY shopping_order_id DESC LIMIT ?, ?`, [offset, limit], (err, result) => {
+            // Use 'limit' and 'offset' in your SQL query to implement pagination
+            if (err) {
+                console.error('Error querying Index: ' + err.stack);
+                res.status(500).send("Error fetching Index from database");
+            } else {
+                res.send({ data: result, totalRecords: totalRecords });
+            }
+        });
+
     });
 });
 
 //reminder file and pending-reminder fetching route
 
 app.get('/reminder', (req, res) => {
-    db.query("select * from tbl_history", (err, result) => {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
+    const offset = (page - 1) * limit;
+
+    db.query(`SELECT COUNT(*) AS total FROM tbl_history`, (err, countResult) => {
         if (err) {
-            console.log('error occured in fetching reminder table:' + err.stack);
+            console.error('Error counting records: ' + err.stack);
+            res.status(500).send("Error fetching reminder from database");
+            return;
         }
-        else {
-            res.send(result);
-        }
-    });
-});
 
+        const totalRecords = countResult[0].total;
 
-//customer-feedback file fetching route
-
-app.get('/customer-feedback', (req, res) => {
-    db.query('select * from tbl_feedback_user', (err, result) => {
-        if (err) {
-            console.log("error occured in fetching customer-feedback data" + err.stack);
-        }
-        else {
-            res.send(result);
-        }
+        db.query(`SELECT * FROM tbl_history ORDER BY id DESC LIMIT ?, ?`, [offset, limit], (err, result) => {
+            if (err) {
+                console.error('Error querying reminder: ' + err.stack);
+                res.status(500).send("Error fetching reminder from database");
+            } else {
+                res.send({ data: result, totalRecords: totalRecords });
+            }
+        });
     });
 });
 
 //history file fetching route
 
 app.get('/history', (req, res) => {
-    db.query('select * from tbl_history', (err, result) => {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
+    const offset = (page - 1) * limit;
+
+    db.query(`SELECT COUNT(*) AS total FROM tbl_history`, (err, countResult) => {
         if (err) {
-            console.log("error occured in fetching Interaction-History-Manage data" + err.stack);
+            console.error('Error counting records: ' + err.stack);
+            res.status(500).send("Error fetching reminder from database");
+            return;
+        }
+
+        const totalRecords = countResult[0].total;
+
+        db.query(`SELECT * FROM tbl_history ORDER BY id DESC LIMIT ?, ?`, [offset, limit], (err, result) => {
+            if (err) {
+                console.log("error occured in fetching Interaction-History-Manage data" + err.stack);
+                res.status(500).send("Error fetching reminder from database");
+            } else {
+                res.send({ data: result, totalRecords: totalRecords });
+            }
+        });
+    });
+});
+
+
+//customer-feedback file fetching route
+app.get('/customer-feedback', (req, res) => {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
+    const offset = (page - 1) * limit;
+
+    db.query(`SELECT COUNT(*) AS total FROM tbl_feedback_user`, (err, countResult) => {
+        if (err) {
+            console.error('Error counting records: ' + err.stack);
+            res.status(500).send("Error fetching customer-feedback from database");
+            return;
+        }
+
+        const totalRecords = countResult[0].total;
+
+        db.query(`SELECT * FROM tbl_feedback_user order by id desc  LIMIT ?, ?`, [offset, limit], (err, result) => {
+            if (err) {
+                console.error('Error querying Index: ' + err.stack);
+                res.status(500).send("Error fetching customer-feedback from database");
+            } else {
+                res.send({ data: result, totalRecords: totalRecords });
+            }
+        });
+    });
+});
+
+//fetch data of leadstfn by customer care employee
+app.get('/leadstfn', (req, res) => {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
+    const offset = (page - 1) * limit;
+
+    db.query(`SELECT COUNT(*) AS total FROM tbl_servertel_lead`, (err, countResult) => {
+        if (err) {
+            res.send("error occured in fetching query leadstfn");
+            res.status(500).send("Error fetching customer-feedback from database");
+            return;
+        }
+
+        const totalRecords = countResult[0].total;
+
+        db.query(`SELECT * FROM tbl_servertel_lead order by id desc LIMIT ?, ?`, [offset, limit], (err, result) => {
+            if (err) {
+                console.error('Error querying lesadstfn: ' + err.stack);
+                res.status(500).send("Error fetching customer-feedback from database");
+            } else {
+                res.send({ data: result, totalRecords: totalRecords });
+            }
+        });
+    });
+});
+
+//fetch data of leadstfn-remark by customer care employee
+app.get('/leadstfn-remark', (req, res) => {
+    const query = `select * from tbl_servertel_lead_remark`;
+    db.query(query, (err, result) => {
+        if (err) {
+            res.send("error occured in fetching query leadstfn-remark");
         }
         else {
             res.send(result);
         }
-    })
-})
+    });
+});
 
+//fetch data of lead-fb-web by customer care employee
+app.get('/lead-fb-web', (req, res) => {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
+    const offset = (page - 1) * limit;
+
+    db.query(`SELECT COUNT(*) AS total FROM tbl_lead_fb_webwhatsapp`, (err, countResult) => {
+        if (err) {
+            res.send("error occured in fetching query leadstfn");
+            res.status(500).send("Error fetching customer-feedback from database");
+            return;
+        }
+
+        const totalRecords = countResult[0].total;
+
+        db.query(`SELECT * FROM tbl_lead_fb_webwhatsapp order by id desc LIMIT ?, ?`, [offset, limit], (err, result) => {
+            if (err) {
+                console.error('Error querying lesadstfn: ' + err.stack);
+                res.status(500).send("Error fetching customer-feedback from database");
+            } else {
+                res.send({ data: result, totalRecords: totalRecords });
+            }
+        });
+    });
+});
 
 //Admin-users file fetching route
 
@@ -254,7 +374,7 @@ app.get('/todays-pending-reminder', (req, res) => {
 });
 
 
-//fetch data of todays-appointment
+//fetch data of todaysappointment
 
 app.get('/todays-appointment', (req, res) => {
     const currentDate = new Date().toISOString().slice(0, 10);
@@ -373,61 +493,58 @@ app.get('/combined-data', (req, res) => {
     });
 });
 
-//fetch data of total orders(monthwise) by customer care employee
+// fetch data of total orders(monthwise) by customer care employee
+// app.get('/order-chart', (req, res) => {
+//     const currentDate = new Date().toISOString().slice(0, 10); // Get current date in 'YYYY-MM-DD' format
+//     const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE date IS NOT NULL GROUP BY MONTH(date) ORDER BY month ASC LIMIT 6`;
+//     db.query(query, (err, result) => {
+//         if (err) {
+//             res.send("error occured in fetching order-chart query" + err);
+//         }
+//         else {
+//             res.send(result);
+//         }
+//     });
+// });
+
 app.get('/order-chart', (req, res) => {
-    const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE date IS NOT NULL GROUP BY MONTH(date)`;
+    let currentDate = new Date().toISOString().slice(0, 10); // Get current date in 'YYYY-MM-DD' format
+    let currentYear = new Date().getFullYear(); //get cuurent year
+
+    // Check if date parameter is provided in the request
+    if (req.query.date) {
+        const providedDate = req.query.date;
+
+        // Check if provided date matches 'YYYY-MM-DD' format
+        const yyyy_mm_dd_format = /^\d{4}-\d{2}-\d{2}$/;
+        if (yyyy_mm_dd_format.test(providedDate)) {
+            currentDate = providedDate;
+        } else {
+            // Check if provided date matches 'DD-MM-YYYY' format
+            const dd_mm_yyyy_format = /^\d{2}-\d{2}-\d{4}$/;
+            if (dd_mm_yyyy_format.test(providedDate)) {
+                const parts = providedDate.split('-');
+                currentDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            } else {
+                return res.status(400).send("Invalid date format. Please provide date in 'YYYY-MM-DD' or 'DD-MM-YYYY' format.");
+            }
+        }
+    }
+
+    // const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE date BETWEEN '2024-01-01' AND '${currentDate}' GROUP BY MONTH(date) ORDER BY month ASC LIMIT 6`;
+    const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE YEAR(date) = ${currentYear} AND date <= '${currentDate}' GROUP BY MONTH(date) ORDER BY month ASC LIMIT 6`;
     db.query(query, (err, result) => {
         if (err) {
-            res.send("error occured in fetching order-chart query" + err);
-        }
-        else {
-            res.send(result);
-        }
-    });
-});
-
-//fetch data of leadstfn by customer care employee
-app.get('/leadstfn', (req, res) => {
-    const query = `select * from tbl_servertel_lead`;
-    db.query(query, (err, result) => {
-        if (err) {
-            res.send("error occured in fetching query leadstfn");
-        }
-        else {
-            res.send(result);
-        }
-    });
-});
-
-//fetch data of leadstfn-remark by customer care employee
-app.get('/leadstfn-remark', (req, res) => {
-    const query = `select * from tbl_servertel_lead_remark`;
-    db.query(query, (err, result) => {
-        if (err) {
-            res.send("error occured in fetching query leadstfn-remark");
-        }
-        else {
-            res.send(result);
-        }
-    });
-});
-
-//fetch data of lead-fb-web by customer care employee
-
-app.get('/lead-fb-web', (req, res) => {
-    const query = `select * from tbl_lead_fb_webwhatsapp`;
-    db.query(query, (err, result) => {
-        if (err) {
-            res.send("error occured in fetching query lead_fb/webwhatsapp");
-        }
-        else {
+            res.status(500).send("An error occurred while fetching order-chart data: " + err);
+        } else {
             res.send(result);
         }
     });
 });
 
 
-//fetch data of feedback-form-modal to edit data in all manage-orders
+
+//route for fetch data of feedback-form-modal to edit data in all manage-orders table
 
 app.post('/feedback-form-modal', (req, res) => {
     const formData = req.body;
@@ -445,14 +562,16 @@ app.post('/feedback-form-modal', (req, res) => {
             res.status(500).json({ Status: 'Error', message: 'Failed to update data in database' });
             return;
         }
-        console.log('Data updated in MySQL successfully');
+        // console.log('Data updated in MySQL successfully');
         res.json({ Status: 'Success', message: 'Data updated successfully' });
     });
 });
 
+//route for fetch data of followUp-modal to show data in all manage-orders table
+
 app.get('/feedbackFormModalTable', (req, res) => {
     const ordernumber = req.query.phone;
-
+    // console.log(ordernumber);
     db.query(`select * from tbl_history where number ='${ordernumber}' order by id desc`, (err, result1) => {
         if (err) {
             console.error("Error occurred in fetching feedbackFormModalTable table data:", err);
@@ -464,20 +583,22 @@ app.get('/feedbackFormModalTable', (req, res) => {
 });
 
 app.get('/purchaseTime', (req, res) => {
-    const ordernumber = req.query.ordernumber;
+    const number = req.query.contact;
 
-    console.log(ordernumber);
-    const query = `select * from tbl_payment_orders  where shopping_order_id='${ordernumber}'`;
+    // console.log(number);
+    const query = `SELECT *, (SELECT COUNT(*) FROM tbl_payment_orders WHERE contact='${number}') AS totalpurchaseTime FROM tbl_payment_orders WHERE contact='${number}'`;
+    // console.log(query);
     db.query(query, (err, result) => {
         if (err) {
-            console.log("error occured in fetching no. of purchase time in query");
-        }
-        else {
+            console.log("Error occurred in fetching purchase data:");
+            res.status(500).send("Error occurred in fetching purchaseTime data");
+        } else {
+            console.log("Success:", result);
             res.send(result);
-            console.log("success");
         }
-    })
-})
+    });
+});
+
 
 app.listen(5000, () => {
     console.log("running to port no. 5000")

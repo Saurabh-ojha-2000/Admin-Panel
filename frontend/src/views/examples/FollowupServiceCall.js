@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, CardHeader, CardBody, Progress, Table, Container, Row, Col, FormGroup, Input, Form, Label } from "reactstrap";
 import Header from "components/Headers/Header.js"; // header 
-// import "../assets/css/dashboard.css" //css file
 import axios from "axios";
+import CustomPagination from "./CustomPagination";
 
 const Index = (props) => {
 
-    // to show date =  curretn date in feedback modal
+    // to show date =  current date in feedback modal
     const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
     const [selectedDateModal, setSelectedDateModal] = useState(currentDate);
 
@@ -19,7 +19,7 @@ const Index = (props) => {
             day: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
-            seconds: '2-digit'
+            seconds: '2-digit',
         };
         return date.toLocaleString('en-US', options).replace(/\//g, '-');
     }
@@ -29,43 +29,78 @@ const Index = (props) => {
         setSelectedDate(event.target.value);
     };
 
-    // for option employee field
-    const [selectedOption, setSelectedOption] = useState("");
+    // for option to filter data showing rows field
+    const [selectedOptionrecordPerPage, setSelectedOptionrecordPerPage] = useState("");
     const handleChange = (event) => {
-        setSelectedOption(event.target.value);
+        setSelectedOptionrecordPerPage(event.target.value);
     };
 
+
+    const handlesubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
+        try {
+            await fetchcustomerdata(); // Fetch data using the selected option
+        } catch (error) {
+            console.error('Error occurred while fetching data:', error);
+        }
+    };
+
+    const [userdata, setUserdata] = useState([]);
+    const [totalRecords, setTotalRecords] = useState(0); // Initialize totalRecords state
+    const [currentPage, setCurrentPage] = useState(1);
+
     useEffect(() => {
-        fetchcustomerdata();
-        fetch_call_form_fill_data();
-        fetch_all_calldata();
         fetchdataIHmodal();
         fetchdataIHmodal2();
     }, [])
 
+    useEffect(() => {
+        // Retrieve the current page from local storage if available
+        const savedPage = localStorage.getItem('currentPage');
+        if (savedPage) {
+            setCurrentPage(parseInt(savedPage));
+        } else {
+            setCurrentPage(1); // Default to page 1 if not found in local storage
+        }
+    }, []);
 
 
-    const [userdata, setUserdata] = useState([]);
+    useEffect(() => {
+        fetchcustomerdata();
+    }, [currentPage])
+
+    // route for showing data of All-orders-manage
+
     const fetchcustomerdata = async () => {
         try {
-            const result = await axios('http://localhost:5000/Index');
-            setUserdata(result.data);
-        }
-        catch (err) {
-            console.log("error fetching in api of Index from database" + err.stack);
+            const result = await axios.get(`http://localhost:5000/Index?page=${currentPage}&limit=${selectedOptionrecordPerPage}`);
+            setUserdata(result.data.data);
+            setTotalRecords(result.data.totalRecords);
+        } catch (err) {
+            console.log("error fetching in api of Index from database", err.stack);
         }
     };
 
-    const [callformfilldata, setCallFormfilldata] = useState([]);
-    const fetch_call_form_fill_data = async () => {
+    // route for showing data of purchaseTime from purchaseTime route and tbl_payment_orders table
+    const [purchaseTimeData, setPurchaseTimeData] = useState([]);
+    const setPurchaseTime = async (phonenumber) => {
         try {
-            const cfresult = await axios('http://localhost:5000/combined-data');
-            setCallFormfilldata(cfresult.data.callForm);
-        }
-        catch (err) {
-            console.log("error occured in fetching api of call-form ");
+            const result = await axios.get(`http://localhost:5000/purchaseTime?contact=${phonenumber}`);
+            setPurchaseTimeData(result.data);
+        } catch (error) {
+            console.log("error occured int fetching data of purchase time", err.stack);
         }
     }
+
+    // Pagination
+
+    const changeCPage = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    useEffect(() => {
+        localStorage.setItem('currentPage', currentPage);
+    }, [currentPage]);
 
     // route for showing data of interaction-history manage modal
     const [userdata1, setUserdata1] = useState([]);
@@ -90,19 +125,6 @@ const Index = (props) => {
             console.log('error cocured in fetching axios from feedbackFormModalTable' + err.stack);
         }
     }
-
-
-    const [calldata, setCalldata] = useState([]);
-    const fetch_all_calldata = async () => {
-        try {
-            const csresult = await axios('http://localhost:5000/combined-data');
-            setCalldata(csresult.data.callSummary);
-        }
-        catch (err) {
-            console.log("error occured in fetching api of call-form ");
-        }
-    }
-
 
     const [feedbackvalues, setFeedbackValues] = useState({
         calltype: "",
@@ -141,11 +163,18 @@ const Index = (props) => {
         }
     };
 
+    // to set invalid date as empty
+    function isValidDate(dateString) {
+        return !isNaN(Date.parse(dateString));
+    }
+
+
     return (
         <>
             <Header />
             {/* Page content */}
             <Container className="mt--7" fluid>
+                {/* Order Manage table starts here */}
                 <Row className="mt-5">
                     <Col className="mb-5 mb-xl-0" xl="12">
                         <Card className="shadow">
@@ -159,20 +188,24 @@ const Index = (props) => {
                             <div className="pl-lg-4">
                                 <Row className="form-control-main-section">
                                     <Col lg="2">
-                                        <FormGroup>
-                                            <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
-                                            <div style={{ display: "flex" }}>
-                                                <select id="option" value={selectedOption} onChange={handleChange} className="form-control-alternative">
-                                                    <option value={""}>25</option>
-                                                    <option value={"option1"}>50</option>
-                                                    <option value={"option2"}>100</option>
-                                                    <option value={"option3"}>150</option>
-                                                    <option value={"option4"}>200</option>
-                                                    <option value={"option5"}>250</option>
-                                                </select>
-                                                <Button className="form-control-table-inner-button">Go </Button>
-                                            </div>
-                                        </FormGroup>
+                                        <Form onSubmit={handlesubmit}>
+                                            <FormGroup>
+                                                <div> <label className="form-control-label" htmlFor="input-email" > Items Per Page:</label> </div>
+                                                <div style={{ display: "flex" }}>
+                                                    <select id="option" value={selectedOptionrecordPerPage} onChange={handleChange} className="form-control-alternative">
+                                                        <option value={25}>25</option>
+                                                        <option value={50}>50</option>
+                                                        <option value={100}>100</option>
+                                                        <option value={150}>150</option>
+                                                        <option value={200}>200</option>
+                                                        <option value={250}>250</option>
+                                                    </select>
+
+                                                    <Button type="submit" className="form-control-table-inner-button">Go</Button>
+
+                                                </div>
+                                            </FormGroup>
+                                        </Form>
                                     </Col>
                                     <Col lg="2">
                                         <FormGroup>
@@ -223,8 +256,9 @@ const Index = (props) => {
                                 <tbody>
                                     {userdata.map((user, i) => {
                                         return (
-                                            <tr className="text-center" key={i}     >
+                                            <tr className="text-center" key={i}>
                                                 <th className="table-tr-th-border" scope="row" >{i + 1}</th>
+
                                                 {/* FeedBack Form Modal  Starts here */}
                                                 <td className="table-tr-th-border">
 
@@ -237,7 +271,7 @@ const Index = (props) => {
                                                             fetchdataIHmodal2(user?.contact);
                                                         }} // Set ordernumber when opening modal
                                                     >
-                                                        {user.shopping_order_id}
+                                                        Feedback
                                                     </Button>
 
                                                     {/* <!-- Modal --> */}
@@ -537,8 +571,6 @@ const Index = (props) => {
                                                                     </Form>
                                                                 </div>
 
-
-
                                                                 {/* show all the table data */}
                                                                 <Table className="align-items-center table-flush" responsive>
                                                                     <thead className="table-thead-main-body">
@@ -564,8 +596,8 @@ const Index = (props) => {
                                                                                     <td className="table-tr-th-border">{user.message_reply}</td>
                                                                                     <td className="table-tr-th-border">{user.doctor_comments}</td>
                                                                                     <td className="table-tr-th-border">{user.feedback_status}</td>
-                                                                                    <td className="table-tr-th-border"> {user.status}</td>
-                                                                                    <td className="table-tr-th-border"> {user.date}</td>
+                                                                                    <td className="table-tr-th-border">{user.status}</td>
+                                                                                    <td className="table-tr-th-border">{user.date}</td>
                                                                                     <td className="table-tr-th-border"><Button className="table-td-createby">{user.add_by}</Button></td>
                                                                                 </tr>
                                                                             )
@@ -584,13 +616,15 @@ const Index = (props) => {
                                                 </td>
                                                 {/* FeedBack Form Modal  ends here */}
 
+
                                                 <td className="table-tr-th-border"> {user.name}</td>
 
                                                 {/* Follow up Modal  starts here */}
                                                 <td className="table-tr-th-border">
                                                     {/* <!-- Button trigger modal --> */}
-
-                                                    <Button type="button" className="table-td-purchase-fa-history" data-bs-toggle="modal" data-bs-target={`#exampleModal3-${i}`}>
+                                                    <Button type="button" className="table-td-purchase-fa-history" data-bs-toggle="modal" data-bs-target={`#exampleModal3-${i}`}
+                                                        onClick={() => { fetchdataIHmodal2(user?.contact) }}// Set ordernumber when opening modal
+                                                    >
                                                         <i className="fa fa-history" />
                                                     </Button>
 
@@ -622,17 +656,24 @@ const Index = (props) => {
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody style={{ border: "1px solid black" }}>
-                                                                            <tr className="text-center">
-                                                                                <td className="table-tr-th-border">{userdata1[i]?.ordernumber}</td>
-                                                                                <td className="table-tr-th-border">{userdata1[i]?.name}</td>
-                                                                                <td className="table-tr-th-border">{userdata1[i]?.message}</td>
-                                                                                <td className="table-tr-th-border">{userdata1[i]?.message_reply}</td>
-                                                                                <td className="table-tr-th-border">{userdata1[i]?.feedback_status}</td>
-                                                                                <td className="table-tr-th-border"> {userdata1[i]?.status}</td>
-                                                                                <td className="table-tr-th-border"> {userdata1[i]?.date}</td>
-                                                                                <td className="table-tr-th-border">{userdata1[i]?.add_by}</td>
+                                                                            {
+                                                                                userdata2.map((user, i) => {
+                                                                                    return (
+                                                                                        <tr className="text-center" key={i}>
+                                                                                            <td className="table-tr-th-border"><Button className="table-td-contact">{user.ordernumber}</Button></td>
+                                                                                            <td className="table-tr-th-border">{user.name}</td>
+                                                                                            <td className="table-tr-th-border">{user.message}</td>
+                                                                                            <td className="table-tr-th-border">{user.message_reply}</td>
+                                                                                            <td className="table-tr-th-border">{user.feedback_status}</td>
+                                                                                            <td className="table-tr-th-border"><Button className="table-td-shipping-status"> {user.status}</Button></td>
+                                                                                            <td className="table-tr-th-border"> {user.date}</td>
+                                                                                            <td className="table-tr-th-border"><Button className="table-td-createby">{user.add_by}</Button></td>
 
-                                                                            </tr>
+                                                                                        </tr>
+                                                                                    )
+                                                                                })
+                                                                            }
+
                                                                         </tbody>
                                                                     </Table>
                                                                 </div>
@@ -646,17 +687,24 @@ const Index = (props) => {
                                                     </div>
                                                 </td>
                                                 {/* follow up Modal  ends here */}
+
+
                                                 <td className="table-tr-th-border">{user.tags}</td>
                                                 <td className="table-tr-th-border">{conertToAsiaTime(user.placed_date)}</td>
-                                                <td className="table-tr-th-border">{conertToAsiaTime(user.ed_date)} </td>
-                                                <td className="table-tr-th-border">{conertToAsiaTime(user.delivereddate)}</td>
+                                                <td className="table-tr-th-border">{user.ed_date && isValidDate(user.ed_date) ? conertToAsiaTime(user.ed_date) : " "}</td>
+                                                <td className="table-tr-th-border">{user.delivereddate && isValidDate(user.delivereddate) ? conertToAsiaTime(user.delivereddate) : " "}</td>
                                                 <td className="table-tr-th-border">{user.carrier_name}</td>
+
 
                                                 {/* Purchase Time Modal  Starts here */}
                                                 <td className="table-tr-th-border">
                                                     {/* <!-- Button trigger modal --> */}
                                                     <Button type="button" className="table-td-purchase-time" data-bs-toggle="modal"
                                                         data-bs-target={`#exampleModal1-${i}`} style={{ backgroundColor: "#4141e7", color: "white" }}
+                                                        onClick={() => {
+                                                            setPurchaseTime(user?.contact)
+                                                            // fetchPTImage(user?.shopping_order_id)
+                                                        }}
                                                     >
                                                         {user.no_purchasetime}
                                                     </Button>
@@ -670,34 +718,42 @@ const Index = (props) => {
                                                                     <h1 className="modal-title fs-8" id={`exampleModalLabel1-${i}`}>Order Summary</h1>
                                                                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                                 </div>
-                                                                <h1 className="modal-title fs-5" id={`exampleModalLabel1-${i}`} style={{ textAlign: "center", margin: "20px" }}>Customer Support Queries Order No. {user.shopping_order_id}
-                                                                </h1>
+                                                                <h1 className="modal-title fs-5" id={`exampleModalLabel1-${i}`} style={{ textAlign: "center", margin: "20px" }}>
+                                                                    Customer All Previous  Orders For <strong><i>{user.contact}</i></strong></h1>
                                                                 <hr style={{ width: "40%", margin: "0 auto" }} />
                                                                 <div className="modal-body">
 
+                                                                    {Array.isArray(purchaseTimeData) && purchaseTimeData.map((pt, i) => {
+                                                                        return (
+                                                                            <React.Fragment key={i}>
+                                                                                <div className="element-index-heading" key={i}>Order Summary of #<strong>{pt.shopping_order_id}</strong></div>
 
-                                                                    <Table className="align-items-center table-flush" responsive>
-                                                                        <thead className="table-thead-main-body">
-                                                                            <tr className="table-thead-tr-headings">
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Image</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Product Name</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Price</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>QTY</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Date</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Total Amount</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody style={{ border: "1px solid black" }}>
-                                                                            <tr className="text-center">
-                                                                                <td className="table-tr-th-border"> <img src={require(`../../assets/img/theme/${user.invoice_image}`)} alt="loading"></img></td>
-                                                                                <td className="table-tr-th-border">{user.product_item} </td>
-                                                                                <td className="table-tr-th-border">{user.p_price} </td>
-                                                                                <td className="table-tr-th-border"> {user.total_quantity}</td>
-                                                                                <td className="table-tr-th-border"> {user.date_pay}</td>
-                                                                                <td className="table-tr-th-border"> {user.amount}</td>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </Table>
+                                                                                <Table className="align-items-center table-flush" responsive>
+                                                                                    <tbody style={{ border: "1px solid black" }}>
+                                                                                        <tr className="table-thead-tr-headings table-thead-main-body">
+                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Image</th>
+                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Product Name</th>
+                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Price</th>
+                                                                                            <th scope="col" style={{ border: "1px solid black" }}>QTY</th>
+                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Date</th>
+                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Total Amount</th>
+                                                                                        </tr>
+
+                                                                                        <tr className="text-center" key={i}>
+                                                                                            <td className="table-tr-th-border"> <img src={require(`../../assets/img/theme/${pt.invoice_image}`)} alt="loading"></img></td>
+                                                                                            <td className="table-tr-th-border">{pt.product_item} </td>
+                                                                                            <td className="table-tr-th-border">{pt.p_price} </td>
+                                                                                            <td className="table-tr-th-border">{pt.total_quantity}</td>
+                                                                                            <td className="table-tr-th-border">{pt.date_pay}</td>
+                                                                                            <td className="table-tr-th-border">{pt.amount}</td>
+                                                                                        </tr>
+
+                                                                                    </tbody>
+                                                                                </Table>
+
+                                                                            </React.Fragment>
+                                                                        )
+                                                                    })}
                                                                 </div>
 
                                                                 <div className="modal-footer">
@@ -709,6 +765,7 @@ const Index = (props) => {
                                                     </div>
                                                 </td>
                                                 {/* Purchase Time Modal  ends here */}
+
 
                                                 <td className="table-tr-th-border"> {user.name}</td>
                                                 <td className="table-tr-th-border"><Button className="table-td-contact">{user.contact}</Button></td>
@@ -728,13 +785,17 @@ const Index = (props) => {
                                     }
                                 </tbody>
                             </Table>
+                            
+                            <CustomPagination totalPages={Math.ceil(totalRecords / (selectedOptionrecordPerPage || 25))} currentPage={currentPage} onPageChange={changeCPage} />
+
                         </Card>
                     </Col>
 
                 </Row>
-            </Container>
+            </Container >
         </>
     );
+
 };
 
 export default Index;
