@@ -35,6 +35,67 @@ const Index = (props) => {
         setSelectedOptionrecordPerPage(event.target.value);
     };
 
+    // function to handle the data of searched data from tbl_payment_orders
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleSearchSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            const responseSearch = await axios.get(`http://localhost:5000/search?searchTerm=${searchTerm}&tablename=tbl_payment_orders`);
+
+            if (responseSearch.data && responseSearch.data.length > 0) {
+                setUserdata(responseSearch.data.data); // Update userdata state with search results
+                setTotalRecords(responseSearch.data.length); // Assuming totalRecords should be the length of the search results
+                // console.log("Searching results for: ", responseSearch);
+            } else {
+                // No search results found
+                setUserdata([]); // Clear userdata state
+                setTotalRecords(0); // Reset totalRecords to 0
+                console.log("No search results found");
+            }
+        } catch (error) {
+            console.error("Error Fetching search results:", error);
+        }
+    };
+
+    // function to handle the data of Datesearched from tbl_payment_orders
+
+    const [selectedDateFrom, setSelectedDateFrom] = useState("");
+    const handleDateChangeFrom = (event) => {
+        setSelectedDateFrom(event.target.value);
+    };
+
+    const [selectedDateTo, setSelectedDateTo] = useState("");
+    const handleDateChangeTo = (event) => {
+        setSelectedDateTo(event.target.value);
+    };
+
+    const handleDateSearchSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            const responseDateSearch = await axios.get(`http://localhost:5000/date-search?fromDate=${selectedDateFrom}&toDate=${selectedDateTo}&tablename=tbl_payment_orders`);
+            // console.log("Searching results for datesearch is : ", responseDateSearch);
+
+            if (responseDateSearch.data && responseDateSearch.data.length > 0) {
+                setUserdata(responseDateSearch.data);
+                setTotalRecords(responseDateSearch.data.length);
+                console.log("Searching results for datesearch is : ", responseDateSearch);
+            } else {
+                // No search results found
+                setUserdata([]); // Clear userdata state
+                setTotalRecords(0); // Reset totalRecords to 0
+                console.log("No search results found");
+            }
+
+        } catch (error) {
+            console.log("Error occured in fetching dateSearch results:", error);
+        }
+    }
+
 
     const handlesubmit = async (e) => {
         e.preventDefault(); // Prevent default form submission behavior
@@ -200,31 +261,47 @@ const Index = (props) => {
                                                         <option value={200}>200</option>
                                                         <option value={250}>250</option>
                                                     </select>
-
-                                                    <Button type="submit" className="form-control-table-inner-button">Go</Button>
-
+                                                    <Button type="submit" className="form-control-table-inner-button" style={{ marginLeft: "10px" }}>Go</Button>
                                                 </div>
                                             </FormGroup>
                                         </Form>
                                     </Col>
-                                    <Col lg="2">
-                                        <FormGroup>
-                                            <label className="form-control-label" htmlFor="input-date">From Date:</label>
-                                            <Input type="date" placeholder="dd/mm/yyyy" className="form-control-alternative" value={selectedDate} onChange={handleDateChange} />
-                                            {selectedDate}
-                                        </FormGroup>
+
+                                    <Col lg="4" className="d-flex justify-content-between">
+                                        <Form onSubmit={handleDateSearchSubmit}>
+                                            <FormGroup>
+
+                                                <div style={{ display: "flex" }}>
+
+                                                    <Col lg="23">
+                                                        <div><label className="form-control-label" htmlFor="input-date">From Date:</label></div>
+                                                        <Input type="date" placeholder="dd/mm/yyyy" className="form-control-alternative" value={selectedDateFrom} onChange={handleDateChangeFrom} />
+                                                    </Col>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    <Col lg="23">
+                                                        <div><label className="form-control-label" htmlFor="input-date">To Date:</label></div>
+                                                        <Input type="date" className="form-control-alternative" value={selectedDateTo} onChange={handleDateChangeTo} placeholder="dd/mm/yyyy" />
+                                                    </Col>
+
+                                                    <div> <Button type="submit" className="form-control-table-inner-button" style={{ marginLeft: "10px", marginTop: "30px" }}>Go</Button> </div>
+
+                                                </div>
+
+                                            </FormGroup>
+                                        </Form>
                                     </Col>
+
                                     <Col lg="2">
-                                        <FormGroup>
-                                            <label className="form-control-label" htmlFor="input-date">To Date:</label>
-                                            <Input type="date" className="form-control-alternative" value={selectedDate} onChange={handleDateChange} placeholder="dd/mm/yyyy" />
-                                        </FormGroup>
-                                    </Col>
-                                    <Col lg="2">
-                                        <FormGroup>
-                                            <label className="form-control-label" htmlFor="input-search">Search</label>
-                                            <Input type="search" className="form-control-alternative" placeholder="Name, Mobile No., Order ID" />
-                                        </FormGroup>
+                                        <Form onSubmit={handleSearchSubmit}>
+                                            <FormGroup>
+                                                <label className="form-control-label" htmlFor="input-search">Search</label>
+                                                <div style={{ display: "flex" }}>
+
+                                                    <Input type="search" placeholder="Name, Mobile No., Order ID" value={searchTerm} onChange={handleSearchChange} className="form-control-alternative" />
+                                                    <Button type="submit" className="form-control-table-inner-button" style={{ marginLeft: "10px" }}>Go</Button>
+                                                </div>
+                                            </FormGroup>
+                                        </Form>
                                     </Col>
                                 </Row>
                             </div>
@@ -785,7 +862,7 @@ const Index = (props) => {
                                     }
                                 </tbody>
                             </Table>
-                            
+
                             <CustomPagination totalPages={Math.ceil(totalRecords / (selectedOptionrecordPerPage || 25))} currentPage={currentPage} onPageChange={changeCPage} />
 
                         </Card>

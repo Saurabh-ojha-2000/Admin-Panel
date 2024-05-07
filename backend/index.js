@@ -62,7 +62,6 @@ app.post('/login', (req, res) => {
     const sql = 'select * from user where email=?';
 
     db.query(sql, [req.body.email], (err, data) => {
-        // console.log(data);
         if (err) {
             return res.json({ Error: "Error hashing fetching password" });
         }
@@ -562,7 +561,6 @@ app.post('/feedback-form-modal', (req, res) => {
             res.status(500).json({ Status: 'Error', message: 'Failed to update data in database' });
             return;
         }
-        // console.log('Data updated in MySQL successfully');
         res.json({ Status: 'Success', message: 'Data updated successfully' });
     });
 });
@@ -571,7 +569,6 @@ app.post('/feedback-form-modal', (req, res) => {
 
 app.get('/feedbackFormModalTable', (req, res) => {
     const ordernumber = req.query.phone;
-    // console.log(ordernumber);
     db.query(`select * from tbl_history where number ='${ordernumber}' order by id desc`, (err, result1) => {
         if (err) {
             console.error("Error occurred in fetching feedbackFormModalTable table data:", err);
@@ -585,9 +582,7 @@ app.get('/feedbackFormModalTable', (req, res) => {
 app.get('/purchaseTime', (req, res) => {
     const number = req.query.contact;
 
-    // console.log(number);
     const query = `SELECT *, (SELECT COUNT(*) FROM tbl_payment_orders WHERE contact='${number}') AS totalpurchaseTime FROM tbl_payment_orders WHERE contact='${number}'`;
-    // console.log(query);
     db.query(query, (err, result) => {
         if (err) {
             console.log("Error occurred in fetching purchase data:");
@@ -599,6 +594,39 @@ app.get('/purchaseTime', (req, res) => {
     });
 });
 
+//  Route to search component from all -orders-manage table from index file
+app.get('/search', (req, res) => {
+    const searchTerm = req.query.searchTerm; // Assuming frontend sends the search term as a query parameter
+    const TableName = req.query.tablename;
+
+    const query = `SELECT * FROM ${TableName} WHERE name LIKE '%${searchTerm}%' OR email LIKE '%${searchTerm}%' OR contact LIKE '%${searchTerm}%'`;
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log("Error occurred in search-component of index file", err);
+            res.status(500).json({ error: "An error occurred while searching data" });
+        } else {
+            res.json(result);
+        }
+    });
+});
+
+//  Route for datesearch component from all-orders-manage table from index file
+
+app.get('/date-search', (req, res) => {
+    const FromDate = req.query.fromDate;
+    const TODate = req.query.toDate;
+    const TableName = req.query.tablename;
+
+    const query = `SELECT * FROM ${TableName} WHERE order_date BETWEEN '${FromDate}' AND '${TODate}'`;
+    db.query(query, (err, result) => {
+        if (err) {      
+            console.log("Error occurred in DAtesearch-component of index file", err);
+        } else {
+            res.json(result);
+            console.log("DateSearch result :", result);
+        }
+    });
+});
 
 app.listen(5000, () => {
     console.log("running to port no. 5000")
