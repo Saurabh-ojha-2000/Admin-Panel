@@ -171,30 +171,30 @@ app.get('/reminder', (req, res) => {
 
 //history file fetching route
 
-app.get('/history', (req, res) => {
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-    const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
-    const offset = (page - 1) * limit;
+// app.get('/history', (req, res) => {
+//     const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+//     const limit = parseInt(req.query.limit) || 25; // Default limit to 25 if not provided
+//     const offset = (page - 1) * limit;
 
-    db.query(`SELECT COUNT(*) AS total FROM tbl_history`, (err, countResult) => {
-        if (err) {
-            console.error('Error counting records: ' + err.stack);
-            res.status(500).send("Error fetching reminder from database");
-            return;
-        }
+//     db.query(`SELECT COUNT(*) AS total FROM tbl_history`, (err, countResult) => {
+//         if (err) {
+//             console.error('Error counting records: ' + err.stack);
+//             res.status(500).send("Error fetching reminder from database");
+//             return;
+//         }
 
-        const totalRecords = countResult[0].total;
+//         const totalRecords = countResult[0].total;
 
-        db.query(`SELECT * FROM tbl_history ORDER BY id DESC LIMIT ?, ?`, [offset, limit], (err, result) => {
-            if (err) {
-                console.log("error occured in fetching Interaction-History-Manage data" + err.stack);
-                res.status(500).send("Error fetching reminder from database");
-            } else {
-                res.send({ data: result, totalRecords: totalRecords });
-            }
-        });
-    });
-});
+//         db.query(`SELECT * FROM tbl_history ORDER BY id DESC LIMIT ?, ?`, [offset, limit], (err, result) => {
+//             if (err) {
+//                 console.log("error occured in fetching Interaction-History-Manage data" + err.stack);
+//                 res.status(500).send("Error fetching reminder from database");
+//             } else {
+//                 res.send({ data: result, totalRecords: totalRecords });
+//             }
+//         });
+//     });
+// });
 
 
 //customer-feedback file fetching route
@@ -493,22 +493,10 @@ app.get('/combined-data', (req, res) => {
 });
 
 // fetch data of total orders(monthwise) by customer care employee
-// app.get('/order-chart', (req, res) => {
-//     const currentDate = new Date().toISOString().slice(0, 10); // Get current date in 'YYYY-MM-DD' format
-//     const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE date IS NOT NULL GROUP BY MONTH(date) ORDER BY month ASC LIMIT 6`;
-//     db.query(query, (err, result) => {
-//         if (err) {
-//             res.send("error occured in fetching order-chart query" + err);
-//         }
-//         else {
-//             res.send(result);
-//         }
-//     });
-// });
 
 app.get('/order-chart', (req, res) => {
     let currentDate = new Date().toISOString().slice(0, 10); // Get current date in 'YYYY-MM-DD' format
-    let currentYear = new Date().getFullYear(); //get cuurent year
+    let currentYear = new Date().getFullYear(); // Get current year
 
     // Check if date parameter is provided in the request
     if (req.query.date) {
@@ -530,8 +518,12 @@ app.get('/order-chart', (req, res) => {
         }
     }
 
-    // const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE date BETWEEN '2024-01-01' AND '${currentDate}' GROUP BY MONTH(date) ORDER BY month ASC LIMIT 6`;
-    const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE YEAR(date) = ${currentYear} AND date <= '${currentDate}' GROUP BY MONTH(date) ORDER BY month ASC LIMIT 6`;
+    // Calculate the date 7 months ago
+    const sevenMonthsAgo = new Date(currentYear, new Date().getMonth() - 6, 1);
+    const formattedSevenMonthsAgo = sevenMonthsAgo.toISOString().slice(0, 10);
+
+    const query = `SELECT MONTH(date) AS month, COUNT(id) AS order_count FROM tbl_history WHERE YEAR(date) <= ${currentYear} AND date BETWEEN '${formattedSevenMonthsAgo}' AND '${currentDate}' GROUP BY MONTH(date) ORDER BY month ASC`;
+    
     db.query(query, (err, result) => {
         if (err) {
             res.status(500).send("An error occurred while fetching order-chart data: " + err);
@@ -540,7 +532,6 @@ app.get('/order-chart', (req, res) => {
         }
     });
 });
-
 
 
 //route for fetch data of feedback-form-modal to edit data in all manage-orders table
@@ -594,12 +585,39 @@ app.get('/purchaseTime', (req, res) => {
     });
 });
 
-//  Route to search component from all -orders-manage table from index file
+//  Route to search component from all-orders-manage and Customer Feedback Manage table from index file
 app.get('/search', (req, res) => {
     const searchTerm = req.query.searchTerm; // Assuming frontend sends the search term as a query parameter
-    const TableName = req.query.tablename;
+    console.log(searchTerm);
 
-    const query = `SELECT * FROM ${TableName} WHERE name LIKE '%${searchTerm}%' OR email LIKE '%${searchTerm}%' OR contact LIKE '%${searchTerm}%'`;
+    const TableName = req.query.tablename;
+    console.log(TableName);
+
+    let columnName;
+
+    // Determine the column name based on the provided table name
+    switch (TableName) {
+        case 'tbl_payment_orders' || "tbl_payment":
+            columnName = 'contact';
+            break;
+        case 'tbl_feedback_user':
+            columnName = 'phone';
+            break;
+        case 'tbl_history':
+            columnName = 'number';
+            break;
+        case 'tbl_servertel_lead' || "tbl_servertel_lead_remark":
+            columnName = 'client_number';
+            break;
+        // Add more cases for other tables if needed
+        default:
+            res.status(400).json({ error: "Invalid table name" });
+            return;
+    }
+
+    const query = `SELECT * FROM ${TableName} WHERE name LIKE '%${searchTerm}%' OR email LIKE '%${searchTerm}%' OR ${columnName} LIKE '%${searchTerm}%'`;
+    console.log(query);
+
     db.query(query, (err, result) => {
         if (err) {
             console.log("Error occurred in search-component of index file", err);
@@ -619,8 +637,102 @@ app.get('/date-search', (req, res) => {
 
     const query = `SELECT * FROM ${TableName} WHERE order_date BETWEEN '${FromDate}' AND '${TODate}'`;
     db.query(query, (err, result) => {
-        if (err) {      
+        if (err) {
             console.log("Error occurred in DAtesearch-component of index file", err);
+        } else {
+            res.json(result);
+            console.log("DateSearch result :", result);
+        }
+    });
+});
+
+app.get("/search-reminder-employee", (req, res) => {
+    const currentDate = new Date().toISOString().slice(0, 10);
+    const ReminderDate = req.query.reminderDate || currentDate;
+    const Employee = req.query.employee;
+    const TableName = req.query.tablename;
+
+
+    let query;
+    if (Employee) {
+        query = `SELECT * FROM ${TableName} WHERE add_by = '${Employee}' AND reminder_date = '${ReminderDate}'`;
+    } else {
+        query = `SELECT * FROM ${TableName} WHERE reminder_date = '${ReminderDate}'`;
+    }
+    console.log(query);
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log("Error occurred in emplyee-component of reminder file", err);
+        } else {
+            res.json(result);
+            console.log("Date&employee Search result :", result);
+        }
+    })
+})
+
+//  Route to search component from Leads Web Whatsapp/FB Manage table 
+
+app.get('/search-leadWW/Fb', (req, res) => {
+    const searchTerm = req.query.searchTerm; // Assuming frontend sends the search term as a query parameter
+    console.log(searchTerm);
+
+    const TableName = req.query.tablename;
+    console.log(TableName);
+
+    const query = `SELECT * FROM ${TableName} WHERE source LIKE '%${searchTerm}%' OR add_by LIKE '%${searchTerm}%' OR number LIKE '%${searchTerm}%'`;
+    console.log(query);
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log("Error occurred in search-component of Leads Web Whatsapp/FB file", err);
+            res.status(500).json({ error: "An error occurred while searching data" });
+        } else {
+            res.json(result);
+        }
+    });
+});
+
+//  Route to search component from Leads-toll-free-number Manage table 
+
+app.get('/search-leadstfn', (req, res) => {
+    const searchTerm = req.query.searchTerm; // Assuming frontend sends the search term as a query parameter
+    console.log(searchTerm);
+
+    const TableName = req.query.tablename;
+    console.log(TableName);
+
+    const query = `SELECT * FROM ${TableName} WHERE service LIKE '%${searchTerm}%' OR status LIKE '%${searchTerm}%' OR client_number LIKE '%${searchTerm}%'`;
+    console.log(query);
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log("Error occurred in search-component of Leads Web Whatsapp/FB file", err);
+            res.status(500).json({ error: "An error occurred while searching data" });
+        } else {
+            res.json(result);
+        }
+    });
+});
+
+//  Route for datesearch component from  Leads-toll-free-number Manage table 
+
+app.get('/date-search-leadstfn', (req, res) => {
+    const FromDate = req.query.fromDate;
+    console.log(FromDate);
+    const TODate = req.query.toDate;
+    console.log(TODate);
+
+    const TableName = req.query.tablename;
+    console.log(TableName);
+
+
+    const query = `SELECT * FROM ${TableName} WHERE date BETWEEN '${FromDate}' AND '${TODate}'`;
+    console.log(query);
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log("Error occurred in DAtesearch-component of  Leads-toll-free-number", err);
         } else {
             res.json(result);
             console.log("DateSearch result :", result);

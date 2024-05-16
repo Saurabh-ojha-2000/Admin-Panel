@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, Route, Routes } from "react-router-dom";
-import { Container, Collapse,Button } from "reactstrap";
+import { Container, Collapse, Button } from "reactstrap";
 // core components
 import routes from "routes.js";
 import Index from "views/Index.js";
@@ -57,6 +57,12 @@ const Admin = (props) => {
       }
     }
     return "Brand";
+  };
+
+  const handleLogout = () => {
+    // Clear token from cookies and redirect to /auth
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    window.location.href = '/auth';
   };
 
   // const [isOpen, setIsOpen] = useState(true);

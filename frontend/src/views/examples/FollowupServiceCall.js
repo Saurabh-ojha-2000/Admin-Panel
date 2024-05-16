@@ -24,10 +24,10 @@ const Index = (props) => {
         return date.toLocaleString('en-US', options).replace(/\//g, '-');
     }
 
-    const [selectedDate, setSelectedDate] = useState("");
-    const handleDateChange = (event) => {
-        setSelectedDate(event.target.value);
-    };
+    // const [selectedDate, setSelectedDate] = useState("");
+    // const handleDateChange = (event) => {
+    //     setSelectedDate(event.target.value);
+    // };
 
     // for option to filter data showing rows field
     const [selectedOptionrecordPerPage, setSelectedOptionrecordPerPage] = useState("");
@@ -283,7 +283,7 @@ const Index = (props) => {
                                                         <Input type="date" className="form-control-alternative" value={selectedDateTo} onChange={handleDateChangeTo} placeholder="dd/mm/yyyy" />
                                                     </Col>
 
-                                                    <div> <Button type="submit" className="form-control-table-inner-button" style={{ marginLeft: "10px", marginTop: "30px" }}>Go</Button> </div>
+                                                    <div> <Button type="submit" className="form-control-table-inner-button" style={{marginTop: "30px" }}>Go</Button> </div>
 
                                                 </div>
 
@@ -298,7 +298,7 @@ const Index = (props) => {
                                                 <div style={{ display: "flex" }}>
 
                                                     <Input type="search" placeholder="Name, Mobile No., Order ID" value={searchTerm} onChange={handleSearchChange} className="form-control-alternative" />
-                                                    <Button type="submit" className="form-control-table-inner-button" style={{ marginLeft: "10px" }}>Go</Button>
+                                                    <Button type="submit" className="form-control-table-inner-button">Go</Button>
                                                 </div>
                                             </FormGroup>
                                         </Form>
@@ -331,535 +331,543 @@ const Index = (props) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {userdata.map((user, i) => {
-                                        return (
-                                            <tr className="text-center" key={i}>
-                                                <th className="table-tr-th-border" scope="row" >{i + 1}</th>
+                                    {userdata.length > 0 ? (
 
-                                                {/* FeedBack Form Modal  Starts here */}
-                                                <td className="table-tr-th-border">
+                                        userdata.map((user, i) => {
+                                            return (
+                                                <tr className="text-center" key={i}>
+                                                    <th className="table-tr-th-border" scope="row" >{i + 1}</th>
 
-                                                    {/* <!-- Button trigger modal --> */}
+                                                    {/* FeedBack Form Modal  Starts here */}
+                                                    <td className="table-tr-th-border">
 
-                                                    <Button type="button" className="btn table-td-action" data-bs-toggle="modal" style={{ backgroundColor: "#4141e7", color: "white" }}
-                                                        data-bs-target={`#exampleModal-${i}`}
-                                                        onClick={() => {
-                                                            setFeedbackValues({ ...feedbackvalues, ordernumber: user.shopping_order_id, date: selectedDateModal })
-                                                            fetchdataIHmodal2(user?.contact);
-                                                        }} // Set ordernumber when opening modal
-                                                    >
-                                                        Feedback
-                                                    </Button>
+                                                        {/* <!-- Button trigger modal --> */}
 
-                                                    {/* <!-- Modal --> */}
+                                                        <Button type="button" className="btn table-td-action" data-bs-toggle="modal" style={{ backgroundColor: "#4141e7", color: "white" }}
+                                                            data-bs-target={`#exampleModal-${i}`}
+                                                            onClick={() => {
+                                                                setFeedbackValues({ ...feedbackvalues, ordernumber: user.shopping_order_id, date: selectedDateModal })
+                                                                fetchdataIHmodal2(user?.contact);
+                                                            }} // Set ordernumber when opening modal
+                                                        >
+                                                            Feedback
+                                                        </Button>
 
-                                                    <div className="modal fade" id={`exampleModal-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel-${i}`} aria-hidden="true">
-                                                        <div className="modal-dialog modal-xl">
-                                                            <div className="modal-content">
-                                                                <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
-                                                                    <h1 className="modal-title fs-8" id={`exampleModalLabel-${i}`}>FeedBack</h1>
-                                                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
-                                                                <h1 className="modal-title fs-5" id={`exampleModalLabel-${i}`} style={{ textAlign: "center", margin: "20px" }}>
-                                                                    Customer Support Queries Order No. {user.shopping_order_id}
-                                                                </h1>
-                                                                <hr style={{ width: "40%", margin: "0 auto" }} />
-                                                                <div className="modal-body">
-                                                                    <Form onSubmit={handleFeedbackForm}>
+                                                        {/* <!-- Modal --> */}
 
-                                                                        {/* call type and subject */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Call Type<span className="required-marker" >*</span> </Label>
-                                                                                    <select id="option" name="calltype" onChange={(e) => setFeedbackValues({ ...feedbackvalues, calltype: e.target.value })} className="form-control-alternative">
-                                                                                        <option value={""}>Select</option>
-                                                                                        <option value={"Inbound Call"}>Inbound Call</option>
-                                                                                        <option value={"Outbound Call"}>Outbound Call</option>
-                                                                                        <option value={"Chat"}>Chat</option>
-                                                                                        <option value={"Email"}>Email</option>
-                                                                                        <option value={"Whatsapp"}>Whatsapp</option>
-                                                                                        <option value={"Facebook"}>Facebook</option>
-                                                                                    </select>
-                                                                                </FormGroup>
-                                                                            </Col>
+                                                        <div className="modal fade" id={`exampleModal-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel-${i}`} aria-hidden="true">
+                                                            <div className="modal-dialog modal-xl">
+                                                                <div className="modal-content">
+                                                                    <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
+                                                                        <h1 className="modal-title fs-8" id={`exampleModalLabel-${i}`}>FeedBack</h1>
+                                                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <h1 className="modal-title fs-5" id={`exampleModalLabel-${i}`} style={{ textAlign: "center", margin: "20px" }}>
+                                                                        Customer Support Queries Order No. {user.shopping_order_id}
+                                                                    </h1>
+                                                                    <hr style={{ width: "40%", margin: "0 auto" }} />
+                                                                    <div className="modal-body">
+                                                                        <Form onSubmit={handleFeedbackForm}>
 
-
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Subject<span className="required-marker" >*</span> </Label>
-                                                                                    <select id="option" className="form-control-alternative" name="subject" onChange={(e) => setFeedbackValues({ ...feedbackvalues, subject: e.target.value })}>
-                                                                                        <option value={""}>Select</option>
-                                                                                        <option value={"FeedBack Call"}>FeedBack Call</option>
-                                                                                        <option value={"Service Call"}>Service Call</option>
-                                                                                        <option value={"Reminder Call"}>Reminder Call</option>
-                                                                                        <option value={"Sale"}>Sale </option>
-                                                                                        <option value={"Doctor Consulation"}>Doctor Consulation</option>
-                                                                                        <option value={"Order Verification"}>Order Verification</option>
-                                                                                        <option value={"Enquiry about the product"}>Enquiry about the product </option>
-                                                                                        <option value={"Delivery Issue/Dispute "}>Delivery Issue/Dispute </option>
-                                                                                        <option value={"Customer Complaint"}>Customer Complaint </option>
-                                                                                        <option value={"Order Cancellattion"}>Order Cancellattion </option>
-                                                                                        <option value={"Address Verification"}>Address Verification</option>
-                                                                                        <option value={"NDR"}>NDR </option>
-                                                                                        <option value={"RTO"}>RTO </option>
-                                                                                        <option value={"Others"}>Others </option>
-                                                                                    </select>
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
-
-                                                                        {/* order number and phone */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Order Number</Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="ordernumber"
-                                                                                        placeholder="12354"
-                                                                                        value={user.shopping_order_id}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> phone</Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="number"
-                                                                                        placeholder="ex- 9201XXXXXX"
-                                                                                        type="number"
-                                                                                        defaultValue={user.contact}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
-
-                                                                        {/* name and email */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label">Name </Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="name"
-                                                                                        placeholder="ex- saurabh ojha"
-                                                                                        type="text"
-                                                                                        defaultValue={user.name}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Email </Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="email"
-                                                                                        placeholder="Please enter your email"
-                                                                                        type="email"
-                                                                                        defaultValue={user.email}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
-
-                                                                        {/* address and date */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Address<span className="required-marker" >*</span> </Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="address"
-                                                                                        placeholder="ex-1234 Main St"
-                                                                                        type="text"
-                                                                                        defaultValue={user.address}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Date<span className="required-marker" >*</span> </Label>
-                                                                                    <Input id="exampleAddress" type="date" name="date" placeholder="1234 Main St" value={selectedDateModal} readOnly />
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
-
-                                                                        {/* enquiry type and concern department */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label">Enquiry Type<span className="required-marker" >*</span> </Label>
-                                                                                    <select id="option" className="form-control-alternative" name="enquiry" onChange={(e) => setFeedbackValues({ ...feedbackvalues, enquiry: e.target.value })} >
-                                                                                        <option value={""}>Please Select One</option>
-                                                                                        <option value={"Order Related Issue"}>Order Related Issue</option>
-                                                                                        <option value={"Damage Product Received"}>Damage Product Received</option>
-                                                                                        <option value={"Payment Related Issue"}>Payment Related Issue</option>
-                                                                                        <option value={"Wrong Product Received"}>Wrong Product Received</option>
-                                                                                        <option value={"Product Purchase"}>Product Purchase</option>
-                                                                                        <option value={"Product Feedback"}>Product Feedback</option>
-                                                                                        <option value={"Product Related Issue"}>Product Related Issue</option>
-                                                                                        <option value={"Consulation"}>Consulation</option>
-                                                                                    </select>
-                                                                                </FormGroup>
-                                                                            </Col>
+                                                                            {/* call type and subject */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Call Type<span className="required-marker" >*</span> </Label>
+                                                                                        <select id="option" name="calltype" onChange={(e) => setFeedbackValues({ ...feedbackvalues, calltype: e.target.value })} className="form-control-alternative">
+                                                                                            <option value={""}>Select</option>
+                                                                                            <option value={"Inbound Call"}>Inbound Call</option>
+                                                                                            <option value={"Outbound Call"}>Outbound Call</option>
+                                                                                            <option value={"Chat"}>Chat</option>
+                                                                                            <option value={"Email"}>Email</option>
+                                                                                            <option value={"Whatsapp"}>Whatsapp</option>
+                                                                                            <option value={"Facebook"}>Facebook</option>
+                                                                                        </select>
+                                                                                    </FormGroup>
+                                                                                </Col>
 
 
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label">Concern Department<span className="required-marker" >*</span> </Label>
-                                                                                    <select id="option" className="form-control-alternative" name="concern_department" onChange={(e) => setFeedbackValues({ ...feedbackvalues, concern_department: e.target.value })}  >
-                                                                                        <option value={""}>Concern Department</option>
-                                                                                        <option value={"Dispatch/Store Department"}>Dispatch/Store Department</option>
-                                                                                        <option value={"Sales Department"}>Sales Department</option>
-                                                                                        <option value={"Payment Gateway Department"}>Payment Gateway Department </option>
-                                                                                        <option value={"Technical Department"}>Technical Department</option>
-                                                                                        <option value={"Customer Care Department"}>Customer Care Department</option>
-                                                                                        <option value={"Consulation"}>Consulation</option>
-                                                                                    </select>
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Subject<span className="required-marker" >*</span> </Label>
+                                                                                        <select id="option" className="form-control-alternative" name="subject" onChange={(e) => setFeedbackValues({ ...feedbackvalues, subject: e.target.value })}>
+                                                                                            <option value={""}>Select</option>
+                                                                                            <option value={"FeedBack Call"}>FeedBack Call</option>
+                                                                                            <option value={"Service Call"}>Service Call</option>
+                                                                                            <option value={"Reminder Call"}>Reminder Call</option>
+                                                                                            <option value={"Sale"}>Sale </option>
+                                                                                            <option value={"Doctor Consulation"}>Doctor Consulation</option>
+                                                                                            <option value={"Order Verification"}>Order Verification</option>
+                                                                                            <option value={"Enquiry about the product"}>Enquiry about the product </option>
+                                                                                            <option value={"Delivery Issue/Dispute "}>Delivery Issue/Dispute </option>
+                                                                                            <option value={"Customer Complaint"}>Customer Complaint </option>
+                                                                                            <option value={"Order Cancellattion"}>Order Cancellattion </option>
+                                                                                            <option value={"Address Verification"}>Address Verification</option>
+                                                                                            <option value={"NDR"}>NDR </option>
+                                                                                            <option value={"RTO"}>RTO </option>
+                                                                                            <option value={"Others"}>Others </option>
+                                                                                        </select>
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
 
-                                                                        {/* message and mail textfor customer */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Message<span className="required-marker" >*</span> </Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="message"
-                                                                                        placeholder="Type Your Message Here"
-                                                                                        type="textarea"
-                                                                                        onChange={(e) => setFeedbackValues({ ...feedbackvalues, message: e.target.value })}
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
+                                                                            {/* order number and phone */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Order Number</Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="ordernumber"
+                                                                                            placeholder="12354"
+                                                                                            value={user.shopping_order_id}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
 
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Mail Text for Customer<span className="required-marker" >*</span> </Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="mail_message"
-                                                                                        placeholder="ex. Hi Ajay, Thank you for your purchase with us. Your order should have arrived by now and we hope everything went well"
-                                                                                        type="textarea"
-                                                                                        onChange={(e) => setFeedbackValues({ ...feedbackvalues, mail_message: e.target.value })}
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> phone</Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="number"
+                                                                                            placeholder="ex- 9201XXXXXX"
+                                                                                            type="number"
+                                                                                            defaultValue={user.contact}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
 
-                                                                        {/* ticket status and feedback status */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label">Ticket Status<span className="required-marker" >*</span> </Label>
-                                                                                    <select id="option" className="form-control-alternative" name="status" onChange={(e) => setFeedbackValues({ ...feedbackvalues, status: e.target.value })} >
-                                                                                        <option value={""}>Status</option>
-                                                                                        <option value={"Open"}>Open</option>
-                                                                                        <option value={"Close"}>Close</option>
-                                                                                        <option value={"Under Process"}>Under Process</option>
-                                                                                    </select>
-                                                                                </FormGroup>
-                                                                            </Col>
+                                                                            {/* name and email */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label">Name </Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="name"
+                                                                                            placeholder="ex- saurabh ojha"
+                                                                                            type="text"
+                                                                                            defaultValue={user.name}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
 
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Email </Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="email"
+                                                                                            placeholder="Please enter your email"
+                                                                                            type="email"
+                                                                                            defaultValue={user.email}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
 
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label">Feedback Status<span className="required-marker" >*</span> </Label>
-                                                                                    <select id="option" className="form-control-alternative" name="feedback_status" onChange={(e) => setFeedbackValues({ ...feedbackvalues, feedback_status: e.target.value })} >
-                                                                                        <option value={""}>Feedback Status</option>
-                                                                                        <option value={"Feedback"}>Feedback</option>
-                                                                                        <option value={"Call Not Received"}>Call Not Received</option>
-                                                                                        <option value={"sale"}>sale</option>
-                                                                                    </select>
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
+                                                                            {/* address and date */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Address<span className="required-marker" >*</span> </Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="address"
+                                                                                            placeholder="ex-1234 Main St"
+                                                                                            type="text"
+                                                                                            defaultValue={user.address}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
 
-                                                                        {/* reminder date and time */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Set Reminder Date</Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="reminder_date"
-                                                                                        type="date"
-                                                                                        onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder_date: e.target.value })}
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Date<span className="required-marker" >*</span> </Label>
+                                                                                        <Input id="exampleAddress" type="date" name="date" placeholder="1234 Main St" value={selectedDateModal} readOnly />
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
 
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label">Set Reminder Time</Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="reminder_time"
-                                                                                        type="time"
-                                                                                        onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder_time: e.target.value })}
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
-
-                                                                        {/* reminder remark and doctor comments */}
-                                                                        <Row>
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Reminder Remark<span className="required-marker" >*</span> </Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="reminder"
-                                                                                        placeholder="Type Your Remark Here"
-                                                                                        type="textarea"
-                                                                                        onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder: e.target.value })}
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-
-                                                                            <Col md={6}>
-                                                                                <FormGroup>
-                                                                                    <Label for="exampleEmail" className="feedback-modal-label"> Doctor Comments/ Remark<span className="required-marker" >*</span> </Label>
-                                                                                    <Input
-                                                                                        id="exampleAddress"
-                                                                                        name="doctor_comments"
-                                                                                        placeholder="Type Your Comment Here"
-                                                                                        type="textarea"
-                                                                                        onChange={(e) => setFeedbackValues({ ...feedbackvalues, doctor_comments: e.target.value })}
-                                                                                    />
-                                                                                </FormGroup>
-                                                                            </Col>
-                                                                        </Row>
-                                                                        <div className="modal-footer">
-                                                                            <button type="submit" className="btn btn-primary">Save changes</button>
-                                                                        </div>
-                                                                    </Form>
-                                                                </div>
-
-                                                                {/* show all the table data */}
-                                                                <Table className="align-items-center table-flush" responsive>
-                                                                    <thead className="table-thead-main-body">
-                                                                        <tr className="table-thead-tr-headings">
-                                                                            <th scope="col">Order No.</th>
-                                                                            <th scope="col">Customer Name</th>
-                                                                            <th scope="col">Customer Message</th>
-                                                                            <th scope="col">Reply Message</th>
-                                                                            <th scope="col">Doctor Comments</th>
-                                                                            <th scope="col">FeedBack Status</th>
-                                                                            <th scope="col">Ticket Status</th>
-                                                                            <th scope="col">Date</th>
-                                                                            <th scope="col">Added By</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody style={{ border: "1px solid black" }}>
-                                                                        {userdata2.map((user, i) => {
-                                                                            return (
-                                                                                <tr className="text-center" key={i}>
-                                                                                    <td className="table-tr-th-border"><Button className="table-td-contact">{user.ordernumber}</Button></td>
-                                                                                    <td className="table-tr-th-border">{user.name}</td>
-                                                                                    <td className="table-tr-th-border">{user.message}</td>
-                                                                                    <td className="table-tr-th-border">{user.message_reply}</td>
-                                                                                    <td className="table-tr-th-border">{user.doctor_comments}</td>
-                                                                                    <td className="table-tr-th-border">{user.feedback_status}</td>
-                                                                                    <td className="table-tr-th-border">{user.status}</td>
-                                                                                    <td className="table-tr-th-border">{user.date}</td>
-                                                                                    <td className="table-tr-th-border"><Button className="table-td-createby">{user.add_by}</Button></td>
-                                                                                </tr>
-                                                                            )
-                                                                        })
-                                                                        }
-                                                                    </tbody>
-                                                                </Table>
-
-                                                                <div className="modal-footer">
-                                                                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                </td>
-                                                {/* FeedBack Form Modal  ends here */}
+                                                                            {/* enquiry type and concern department */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label">Enquiry Type<span className="required-marker" >*</span> </Label>
+                                                                                        <select id="option" className="form-control-alternative" name="enquiry" onChange={(e) => setFeedbackValues({ ...feedbackvalues, enquiry: e.target.value })} >
+                                                                                            <option value={""}>Please Select One</option>
+                                                                                            <option value={"Order Related Issue"}>Order Related Issue</option>
+                                                                                            <option value={"Damage Product Received"}>Damage Product Received</option>
+                                                                                            <option value={"Payment Related Issue"}>Payment Related Issue</option>
+                                                                                            <option value={"Wrong Product Received"}>Wrong Product Received</option>
+                                                                                            <option value={"Product Purchase"}>Product Purchase</option>
+                                                                                            <option value={"Product Feedback"}>Product Feedback</option>
+                                                                                            <option value={"Product Related Issue"}>Product Related Issue</option>
+                                                                                            <option value={"Consulation"}>Consulation</option>
+                                                                                        </select>
+                                                                                    </FormGroup>
+                                                                                </Col>
 
 
-                                                <td className="table-tr-th-border"> {user.name}</td>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label">Concern Department<span className="required-marker" >*</span> </Label>
+                                                                                        <select id="option" className="form-control-alternative" name="concern_department" onChange={(e) => setFeedbackValues({ ...feedbackvalues, concern_department: e.target.value })}  >
+                                                                                            <option value={""}>Concern Department</option>
+                                                                                            <option value={"Dispatch/Store Department"}>Dispatch/Store Department</option>
+                                                                                            <option value={"Sales Department"}>Sales Department</option>
+                                                                                            <option value={"Payment Gateway Department"}>Payment Gateway Department </option>
+                                                                                            <option value={"Technical Department"}>Technical Department</option>
+                                                                                            <option value={"Customer Care Department"}>Customer Care Department</option>
+                                                                                            <option value={"Consulation"}>Consulation</option>
+                                                                                        </select>
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
 
-                                                {/* Follow up Modal  starts here */}
-                                                <td className="table-tr-th-border">
-                                                    {/* <!-- Button trigger modal --> */}
-                                                    <Button type="button" className="table-td-purchase-fa-history" data-bs-toggle="modal" data-bs-target={`#exampleModal3-${i}`}
-                                                        onClick={() => { fetchdataIHmodal2(user?.contact) }}// Set ordernumber when opening modal
-                                                    >
-                                                        <i className="fa fa-history" />
-                                                    </Button>
+                                                                            {/* message and mail textfor customer */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Message<span className="required-marker" >*</span> </Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="message"
+                                                                                            placeholder="Type Your Message Here"
+                                                                                            type="textarea"
+                                                                                            onChange={(e) => setFeedbackValues({ ...feedbackvalues, message: e.target.value })}
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
 
-                                                    {/* <!-- Modal --> */}
-                                                    <div className="modal fade" id={`exampleModal3-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel3-${i}`} aria-hidden="true">
-                                                        <div className="modal-dialog modal-xl">
-                                                            <div className="modal-content">
-                                                                <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
-                                                                    <h1 className="modal-title fs-8" id={`exampleModalLabel3-${i}`} >Interaction History</h1>
-                                                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
-                                                                <h1 className="modal-title fs-5" id={`exampleModalLabel3-${i}`} style={{ textAlign: "center", margin: "20px" }}>Customer All orders
-                                                                </h1>
-                                                                <hr style={{ width: "20%", margin: "0 auto" }} />
-                                                                <div className="modal-body">
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Mail Text for Customer<span className="required-marker" >*</span> </Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="mail_message"
+                                                                                            placeholder="ex. Hi Ajay, Thank you for your purchase with us. Your order should have arrived by now and we hope everything went well"
+                                                                                            type="textarea"
+                                                                                            onChange={(e) => setFeedbackValues({ ...feedbackvalues, mail_message: e.target.value })}
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
+
+                                                                            {/* ticket status and feedback status */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label">Ticket Status<span className="required-marker" >*</span> </Label>
+                                                                                        <select id="option" className="form-control-alternative" name="status" onChange={(e) => setFeedbackValues({ ...feedbackvalues, status: e.target.value })} >
+                                                                                            <option value={""}>Status</option>
+                                                                                            <option value={"Open"}>Open</option>
+                                                                                            <option value={"Close"}>Close</option>
+                                                                                            <option value={"Under Process"}>Under Process</option>
+                                                                                        </select>
+                                                                                    </FormGroup>
+                                                                                </Col>
 
 
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label">Feedback Status<span className="required-marker" >*</span> </Label>
+                                                                                        <select id="option" className="form-control-alternative" name="feedback_status" onChange={(e) => setFeedbackValues({ ...feedbackvalues, feedback_status: e.target.value })} >
+                                                                                            <option value={""}>Feedback Status</option>
+                                                                                            <option value={"Feedback"}>Feedback</option>
+                                                                                            <option value={"Call Not Received"}>Call Not Received</option>
+                                                                                            <option value={"sale"}>sale</option>
+                                                                                        </select>
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
+
+                                                                            {/* reminder date and time */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Set Reminder Date</Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="reminder_date"
+                                                                                            type="date"
+                                                                                            onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder_date: e.target.value })}
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
+
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label">Set Reminder Time</Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="reminder_time"
+                                                                                            type="time"
+                                                                                            onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder_time: e.target.value })}
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
+
+                                                                            {/* reminder remark and doctor comments */}
+                                                                            <Row>
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Reminder Remark<span className="required-marker" >*</span> </Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="reminder"
+                                                                                            placeholder="Type Your Remark Here"
+                                                                                            type="textarea"
+                                                                                            onChange={(e) => setFeedbackValues({ ...feedbackvalues, reminder: e.target.value })}
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
+
+                                                                                <Col md={6}>
+                                                                                    <FormGroup>
+                                                                                        <Label for="exampleEmail" className="feedback-modal-label"> Doctor Comments/ Remark<span className="required-marker" >*</span> </Label>
+                                                                                        <Input
+                                                                                            id="exampleAddress"
+                                                                                            name="doctor_comments"
+                                                                                            placeholder="Type Your Comment Here"
+                                                                                            type="textarea"
+                                                                                            onChange={(e) => setFeedbackValues({ ...feedbackvalues, doctor_comments: e.target.value })}
+                                                                                        />
+                                                                                    </FormGroup>
+                                                                                </Col>
+                                                                            </Row>
+                                                                            <div className="modal-footer">
+                                                                                <button type="submit" className="btn btn-primary">Save changes</button>
+                                                                            </div>
+                                                                        </Form>
+                                                                    </div>
+
+                                                                    {/* show all the table data */}
                                                                     <Table className="align-items-center table-flush" responsive>
                                                                         <thead className="table-thead-main-body">
                                                                             <tr className="table-thead-tr-headings">
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Order No.</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Customer Name</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Customer Message</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Reply Message</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Feedback Status</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Ticket Status</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Date</th>
-                                                                                <th scope="col" style={{ border: "1px solid black" }}>Added By</th>
+                                                                                <th scope="col">Order No.</th>
+                                                                                <th scope="col">Customer Name</th>
+                                                                                <th scope="col">Customer Message</th>
+                                                                                <th scope="col">Reply Message</th>
+                                                                                <th scope="col">Doctor Comments</th>
+                                                                                <th scope="col">FeedBack Status</th>
+                                                                                <th scope="col">Ticket Status</th>
+                                                                                <th scope="col">Date</th>
+                                                                                <th scope="col">Added By</th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody style={{ border: "1px solid black" }}>
-                                                                            {
-                                                                                userdata2.map((user, i) => {
-                                                                                    return (
-                                                                                        <tr className="text-center" key={i}>
-                                                                                            <td className="table-tr-th-border"><Button className="table-td-contact">{user.ordernumber}</Button></td>
-                                                                                            <td className="table-tr-th-border">{user.name}</td>
-                                                                                            <td className="table-tr-th-border">{user.message}</td>
-                                                                                            <td className="table-tr-th-border">{user.message_reply}</td>
-                                                                                            <td className="table-tr-th-border">{user.feedback_status}</td>
-                                                                                            <td className="table-tr-th-border"><Button className="table-td-shipping-status"> {user.status}</Button></td>
-                                                                                            <td className="table-tr-th-border"> {user.date}</td>
-                                                                                            <td className="table-tr-th-border"><Button className="table-td-createby">{user.add_by}</Button></td>
-
-                                                                                        </tr>
-                                                                                    )
-                                                                                })
+                                                                            {userdata2.map((user, i) => {
+                                                                                return (
+                                                                                    <tr className="text-center" key={i}>
+                                                                                        <td className="table-tr-th-border"><Button className="table-td-contact">{user.ordernumber}</Button></td>
+                                                                                        <td className="table-tr-th-border">{user.name}</td>
+                                                                                        <td className="table-tr-th-border">{user.message}</td>
+                                                                                        <td className="table-tr-th-border">{user.message_reply}</td>
+                                                                                        <td className="table-tr-th-border">{user.doctor_comments}</td>
+                                                                                        <td className="table-tr-th-border">{user.feedback_status}</td>
+                                                                                        <td className="table-tr-th-border">{user.status}</td>
+                                                                                        <td className="table-tr-th-border">{user.date}</td>
+                                                                                        <td className="table-tr-th-border"><Button className="table-td-createby">{user.add_by}</Button></td>
+                                                                                    </tr>
+                                                                                )
+                                                                            })
                                                                             }
-
                                                                         </tbody>
                                                                     </Table>
-                                                                </div>
 
-                                                                <div className="modal-footer">
-                                                                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                                                    <div className="modal-footer">
+                                                                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                                                    </div>
                                                                 </div>
-
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                {/* follow up Modal  ends here */}
+
+                                                    </td>
+                                                    {/* FeedBack Form Modal  ends here */}
 
 
-                                                <td className="table-tr-th-border">{user.tags}</td>
-                                                <td className="table-tr-th-border">{conertToAsiaTime(user.placed_date)}</td>
-                                                <td className="table-tr-th-border">{user.ed_date && isValidDate(user.ed_date) ? conertToAsiaTime(user.ed_date) : " "}</td>
-                                                <td className="table-tr-th-border">{user.delivereddate && isValidDate(user.delivereddate) ? conertToAsiaTime(user.delivereddate) : " "}</td>
-                                                <td className="table-tr-th-border">{user.carrier_name}</td>
+                                                    <td className="table-tr-th-border"> {user.name}</td>
+
+                                                    {/* Follow up Modal  starts here */}
+                                                    <td className="table-tr-th-border">
+                                                        {/* <!-- Button trigger modal --> */}
+                                                        <Button type="button" className="table-td-purchase-fa-history" data-bs-toggle="modal" data-bs-target={`#exampleModal3-${i}`}
+                                                            onClick={() => { fetchdataIHmodal2(user?.contact) }}// Set ordernumber when opening modal
+                                                        >
+                                                            <i className="fa fa-history" />
+                                                        </Button>
+
+                                                        {/* <!-- Modal --> */}
+                                                        <div className="modal fade" id={`exampleModal3-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel3-${i}`} aria-hidden="true">
+                                                            <div className="modal-dialog modal-xl">
+                                                                <div className="modal-content">
+                                                                    <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
+                                                                        <h1 className="modal-title fs-8" id={`exampleModalLabel3-${i}`} >Interaction History</h1>
+                                                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <h1 className="modal-title fs-5" id={`exampleModalLabel3-${i}`} style={{ textAlign: "center", margin: "20px" }}>Customer All orders
+                                                                    </h1>
+                                                                    <hr style={{ width: "20%", margin: "0 auto" }} />
+                                                                    <div className="modal-body">
 
 
-                                                {/* Purchase Time Modal  Starts here */}
-                                                <td className="table-tr-th-border">
-                                                    {/* <!-- Button trigger modal --> */}
-                                                    <Button type="button" className="table-td-purchase-time" data-bs-toggle="modal"
-                                                        data-bs-target={`#exampleModal1-${i}`} style={{ backgroundColor: "#4141e7", color: "white" }}
-                                                        onClick={() => {
-                                                            setPurchaseTime(user?.contact)
-                                                            // fetchPTImage(user?.shopping_order_id)
-                                                        }}
-                                                    >
-                                                        {user.no_purchasetime}
-                                                    </Button>
+                                                                        <Table className="align-items-center table-flush" responsive>
+                                                                            <thead className="table-thead-main-body">
+                                                                                <tr className="table-thead-tr-headings">
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Order No.</th>
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Customer Name</th>
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Customer Message</th>
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Reply Message</th>
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Feedback Status</th>
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Ticket Status</th>
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Date</th>
+                                                                                    <th scope="col" style={{ border: "1px solid black" }}>Added By</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody style={{ border: "1px solid black" }}>
+                                                                                {
+                                                                                    userdata2.map((user, i) => {
+                                                                                        return (
+                                                                                            <tr className="text-center" key={i}>
+                                                                                                <td className="table-tr-th-border"><Button className="table-td-contact">{user.ordernumber}</Button></td>
+                                                                                                <td className="table-tr-th-border">{user.name}</td>
+                                                                                                <td className="table-tr-th-border">{user.message}</td>
+                                                                                                <td className="table-tr-th-border">{user.message_reply}</td>
+                                                                                                <td className="table-tr-th-border">{user.feedback_status}</td>
+                                                                                                <td className="table-tr-th-border"><Button className="table-td-shipping-status"> {user.status}</Button></td>
+                                                                                                <td className="table-tr-th-border"> {user.date}</td>
+                                                                                                <td className="table-tr-th-border"><Button className="table-td-createby">{user.add_by}</Button></td>
 
-                                                    {/* <!-- Modal --> */}
+                                                                                            </tr>
+                                                                                        )
+                                                                                    })
+                                                                                }
 
-                                                    <div className="modal fade" id={`exampleModal1-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel1-${i}`} aria-hidden="true">
-                                                        <div className="modal-dialog modal-xl">
-                                                            <div className="modal-content">
-                                                                <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
-                                                                    <h1 className="modal-title fs-8" id={`exampleModalLabel1-${i}`}>Order Summary</h1>
-                                                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                            </tbody>
+                                                                        </Table>
+                                                                    </div>
+
+                                                                    <div className="modal-footer">
+                                                                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                                                    </div>
+
                                                                 </div>
-                                                                <h1 className="modal-title fs-5" id={`exampleModalLabel1-${i}`} style={{ textAlign: "center", margin: "20px" }}>
-                                                                    Customer All Previous  Orders For <strong><i>{user.contact}</i></strong></h1>
-                                                                <hr style={{ width: "40%", margin: "0 auto" }} />
-                                                                <div className="modal-body">
-
-                                                                    {Array.isArray(purchaseTimeData) && purchaseTimeData.map((pt, i) => {
-                                                                        return (
-                                                                            <React.Fragment key={i}>
-                                                                                <div className="element-index-heading" key={i}>Order Summary of #<strong>{pt.shopping_order_id}</strong></div>
-
-                                                                                <Table className="align-items-center table-flush" responsive>
-                                                                                    <tbody style={{ border: "1px solid black" }}>
-                                                                                        <tr className="table-thead-tr-headings table-thead-main-body">
-                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Image</th>
-                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Product Name</th>
-                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Price</th>
-                                                                                            <th scope="col" style={{ border: "1px solid black" }}>QTY</th>
-                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Date</th>
-                                                                                            <th scope="col" style={{ border: "1px solid black" }}>Total Amount</th>
-                                                                                        </tr>
-
-                                                                                        <tr className="text-center" key={i}>
-                                                                                            <td className="table-tr-th-border"> <img src={require(`../../assets/img/theme/${pt.invoice_image}`)} alt="loading"></img></td>
-                                                                                            <td className="table-tr-th-border">{pt.product_item} </td>
-                                                                                            <td className="table-tr-th-border">{pt.p_price} </td>
-                                                                                            <td className="table-tr-th-border">{pt.total_quantity}</td>
-                                                                                            <td className="table-tr-th-border">{pt.date_pay}</td>
-                                                                                            <td className="table-tr-th-border">{pt.amount}</td>
-                                                                                        </tr>
-
-                                                                                    </tbody>
-                                                                                </Table>
-
-                                                                            </React.Fragment>
-                                                                        )
-                                                                    })}
-                                                                </div>
-
-                                                                <div className="modal-footer">
-                                                                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
-                                                                </div>
-
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                {/* Purchase Time Modal  ends here */}
+                                                    </td>
+                                                    {/* follow up Modal  ends here */}
 
 
-                                                <td className="table-tr-th-border"> {user.name}</td>
-                                                <td className="table-tr-th-border"><Button className="table-td-contact">{user.contact}</Button></td>
-                                                <td className="table-tr-th-border">{user.state}</td>
-                                                <td className="table-tr-th-border">{user.amount}</td>
-                                                <td className="table-tr-th-border">{user.payment_method}</td>
-                                                <td className="table-tr-th-border">{user.payment_method}</td>
-                                                <td className="table-tr-th-border">{user.created_by ? user.created_by : "user"}
-                                                    <div> <Button className="table-td-createby">{user.ordertype}</Button> 	</div>
-                                                </td>
-                                                <td className="table-tr-th-border">{user.source}</td>
-                                                <td className="table-tr-th-border">{user.awb_number}</td>
-                                                <td className="table-tr-th-border"><Button className="table-td-shipping-status">{user.shipping_status}</Button></td>
-                                            </tr>
-                                        )
-                                    })
-                                    }
+                                                    <td className="table-tr-th-border">{user.tags}</td>
+                                                    <td className="table-tr-th-border">{conertToAsiaTime(user.placed_date)}</td>
+                                                    <td className="table-tr-th-border">{user.ed_date && isValidDate(user.ed_date) ? conertToAsiaTime(user.ed_date) : " "}</td>
+                                                    <td className="table-tr-th-border">{user.delivereddate && isValidDate(user.delivereddate) ? conertToAsiaTime(user.delivereddate) : " "}</td>
+                                                    <td className="table-tr-th-border">{user.carrier_name}</td>
+
+
+                                                    {/* Purchase Time Modal  Starts here */}
+                                                    <td className="table-tr-th-border">
+                                                        {/* <!-- Button trigger modal --> */}
+                                                        <Button type="button" className="table-td-purchase-time" data-bs-toggle="modal"
+                                                            data-bs-target={`#exampleModal1-${i}`} style={{ backgroundColor: "#4141e7", color: "white" }}
+                                                            onClick={() => {
+                                                                setPurchaseTime(user?.contact)
+                                                                // fetchPTImage(user?.shopping_order_id)
+                                                            }}
+                                                        >
+                                                            {user.no_purchasetime}
+                                                        </Button>
+
+                                                        {/* <!-- Modal --> */}
+
+                                                        <div className="modal fade" id={`exampleModal1-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel1-${i}`} aria-hidden="true">
+                                                            <div className="modal-dialog modal-xl">
+                                                                <div className="modal-content">
+                                                                    <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
+                                                                        <h1 className="modal-title fs-8" id={`exampleModalLabel1-${i}`}>Order Summary</h1>
+                                                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <h1 className="modal-title fs-5" id={`exampleModalLabel1-${i}`} style={{ textAlign: "center", margin: "20px" }}>
+                                                                        Customer All Previous  Orders For <strong><i>{user.contact}</i></strong></h1>
+                                                                    <hr style={{ width: "40%", margin: "0 auto" }} />
+                                                                    <div className="modal-body">
+
+                                                                        {Array.isArray(purchaseTimeData) && purchaseTimeData.map((pt, i) => {
+                                                                            return (
+                                                                                <React.Fragment key={i}>
+                                                                                    <div className="element-index-heading" key={i}>Order Summary of #<strong>{pt.shopping_order_id}</strong></div>
+
+                                                                                    <Table className="align-items-center table-flush" responsive>
+                                                                                        <tbody style={{ border: "1px solid black" }}>
+                                                                                            <tr className="table-thead-tr-headings table-thead-main-body">
+                                                                                                <th scope="col" style={{ border: "1px solid black" }}>Image</th>
+                                                                                                <th scope="col" style={{ border: "1px solid black" }}>Product Name</th>
+                                                                                                <th scope="col" style={{ border: "1px solid black" }}>Price</th>
+                                                                                                <th scope="col" style={{ border: "1px solid black" }}>QTY</th>
+                                                                                                <th scope="col" style={{ border: "1px solid black" }}>Date</th>
+                                                                                                <th scope="col" style={{ border: "1px solid black" }}>Total Amount</th>
+                                                                                            </tr>
+
+                                                                                            <tr className="text-center" key={i}>
+                                                                                                <td className="table-tr-th-border"> <img src={require(`../../assets/img/theme/${pt.invoice_image}`)} alt="loading"></img></td>
+                                                                                                <td className="table-tr-th-border">{pt.product_item} </td>
+                                                                                                <td className="table-tr-th-border">{pt.p_price} </td>
+                                                                                                <td className="table-tr-th-border">{pt.total_quantity}</td>
+                                                                                                <td className="table-tr-th-border">{pt.date_pay}</td>
+                                                                                                <td className="table-tr-th-border">{pt.amount}</td>
+                                                                                            </tr>
+
+                                                                                        </tbody>
+                                                                                    </Table>
+
+                                                                                </React.Fragment>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+
+                                                                    <div className="modal-footer">
+                                                                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    {/* Purchase Time Modal  ends here */}
+
+
+                                                    <td className="table-tr-th-border"> {user.name}</td>
+                                                    <td className="table-tr-th-border"><Button className="table-td-contact">{user.contact}</Button></td>
+                                                    <td className="table-tr-th-border">{user.state}</td>
+                                                    <td className="table-tr-th-border">{user.amount}</td>
+                                                    <td className="table-tr-th-border">{user.payment_method}</td>
+                                                    <td className="table-tr-th-border">{user.payment_method}</td>
+                                                    <td className="table-tr-th-border">{user.created_by ? user.created_by : "user"}
+                                                        <div> <Button className="table-td-createby">{user.ordertype}</Button> 	</div>
+                                                    </td>
+                                                    <td className="table-tr-th-border">{user.source}</td>
+                                                    <td className="table-tr-th-border">{user.awb_number}</td>
+                                                    <td className="table-tr-th-border"><Button className="table-td-shipping-status">{user.shipping_status}</Button></td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr className="text-center">
+                                            <th className="table-tr-th-border" colSpan="20" style={{ backgroundColor: "bisque" }}>
+                                                No Results Found
+                                            </th>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </Table>
 

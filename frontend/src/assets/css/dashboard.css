@@ -92,6 +92,7 @@ td {
 .form-control-table-inner-button {
   background-color: rgb(60, 60, 226);
   color: white;
+  margin-left: 10px;
 }
 button.form-control-outer-button.btn.btn-secondary {
   margin-top: 30px;

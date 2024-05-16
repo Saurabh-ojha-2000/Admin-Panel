@@ -5,10 +5,36 @@ import axios from "axios";
 import CustomPagination from "./CustomPagination";
 
 function Leadsweb() {
-  const [selectedDate, setSelectedDate] = useState("");
-  const handleDateChange = (event) => {
-    setSelectedDate(event.target.value);
+
+  // function to handle the data of searched data from tbl_payment_orders
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
   };
+
+  const handleSearchSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const responseSearch = await axios.get(`http://localhost:5000/search-leadWW/Fb?searchTerm=${searchTerm}&tablename=tbl_lead_fb_webwhatsapp`);
+
+      if (responseSearch.data && responseSearch.data.length > 0) {
+        setLeadfbwebdata(responseSearch.data); // Update userdata state with search results
+        setTotalRecords(responseSearch.data.length); // Assuming totalRecords should be the length of the search results
+
+      } else {
+        // No search results found
+        setLeadfbwebdata([]); // Clear userdata state
+        setTotalRecords(0); // Reset totalRecords to 0
+        console.log("No search results found");
+      }
+
+    } catch (error) {
+      console.error("Error Fetching search results:", error);
+    }
+
+  };
+
 
   // for option employee field
   const [selectedOption, setSelectedOption] = useState("");
@@ -199,12 +225,17 @@ function Leadsweb() {
                       </Form>
                     </Col>
                     <Col lg="4" style={{ position: " absolute", right: "0%" }}>
-                      <FormGroup className="form-control-outer-search" style={{ marginTop: "32px" }}>
-                        <div className="form-control-search" style={{ display: "flex" }} >
-                          <Input className="form-control-alternative" placeholder="Type Here To Search" />
-                          <Button type="submit" className="form-control-table-inner-button">Search    </Button>
-                        </div>
-                      </FormGroup>
+                      <Form onSubmit={handleSearchSubmit}>
+                        <FormGroup>
+                          <label className="form-control-label" htmlFor="input-search">Search</label>
+
+                          <div style={{ display: "flex" }}>
+                            <Input type="search" placeholder="Name, Mobile No., Order ID" value={searchTerm} onChange={handleSearchChange} className="form-control-alternative" />
+                            <Button type="submit" className="form-control-table-inner-button">Go</Button>
+                          </div>
+
+                        </FormGroup>
+                      </Form>
                     </Col>
                   </Row>
                 </div>
@@ -223,176 +254,184 @@ function Leadsweb() {
                     </tr>
                   </thead>
                   <tbody>
-                    {leadfbwebdata.map((user, i) => {
-                      return (
-                        <tr className="text-center" key={i}>
-                          <th className="table-tr-th-border" scope="row" >{i + 1}</th>
-                          <td className="table-tr-th-border"><Button className="table-td-contact">{user.number}</Button></td>
-                          <td className="table-tr-th-border"><Button className="table-td-action p-1">{user.source}</Button></td>
+                    {leadfbwebdata.length > 0 ? (
+                      leadfbwebdata.map((user, i) => {
+                        return (
+                          <tr className="text-center" key={i}>
+                            <th className="table-tr-th-border" scope="row" >{i + 1}</th>
+                            <td className="table-tr-th-border"><Button className="table-td-contact">{user.number}</Button></td>
+                            <td className="table-tr-th-border"><Button className="table-td-action p-1">{user.source}</Button></td>
 
-                          {/* Purchase Time Modal  Starts here */}
-                          <td className="table-tr-th-border">
-                            {/* <!-- Button trigger modal --> */}
-                            <Button type="button" className="table-td-purchase-time" data-bs-toggle="modal"
-                              data-bs-target={`#exampleModal1-${i}`} style={{ backgroundColor: "#4141e7", color: "white" }}
-                              onClick={() => {
-                                setPurchaseTime(user?.number)
-                              }}
-                            >
-                              <i className="fa-solid fa-business-time"></i>
-                            </Button>
+                            {/* Purchase Time Modal  Starts here */}
+                            <td className="table-tr-th-border">
+                              {/* <!-- Button trigger modal --> */}
+                              <Button type="button" className="table-td-purchase-time" data-bs-toggle="modal"
+                                data-bs-target={`#exampleModal1-${i}`} style={{ backgroundColor: "#4141e7", color: "white" }}
+                                onClick={() => {
+                                  setPurchaseTime(user?.number)
+                                }}
+                              >
+                                <i className="fa-solid fa-business-time"></i>
+                              </Button>
 
-                            {/* <!-- Modal --> */}
+                              {/* <!-- Modal --> */}
 
-                            <div className="modal fade" id={`exampleModal1-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel1-${i}`} aria-hidden="true">
-                              <div className="modal-dialog modal-xl">
-                                <div className="modal-content">
-                                  <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
-                                    <h1 className="modal-title fs-8" id={`exampleModalLabel1-${i}`}>Order Summary</h1>
-                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              <div className="modal fade" id={`exampleModal1-${i}`} tabIndex="-1" aria-labelledby={`exampleModalLabel1-${i}`} aria-hidden="true">
+                                <div className="modal-dialog modal-xl">
+                                  <div className="modal-content">
+                                    <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
+                                      <h1 className="modal-title fs-8" id={`exampleModalLabel1-${i}`}>Order Summary</h1>
+                                      <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <h1 className="modal-title fs-5" id={`exampleModalLabel1-${i}`} style={{ textAlign: "center", margin: "20px" }}>
+                                      Customer All Previous  Orders For <strong><i>{user.number}</i></strong></h1>
+                                    <hr style={{ width: "40%", margin: "0 auto" }} />
+                                    <div className="modal-body">
+
+                                      {Array.isArray(purchaseTimeData) && purchaseTimeData.map((pt, i) => {
+                                        return (
+                                          <React.Fragment key={i}>
+                                            <div className="element-index-heading" key={i}>Order Summary<strong>{pt.number}</strong></div>
+
+                                            <Table className="align-items-center table-flush" responsive>
+                                              <tbody style={{ border: "1px solid black" }}>
+                                                <tr className="table-thead-tr-headings table-thead-main-body">
+                                                  <th scope="col" style={{ border: "1px solid black" }}>Image</th>
+                                                  <th scope="col" style={{ border: "1px solid black" }}>Product Name</th>
+                                                  <th scope="col" style={{ border: "1px solid black" }}>Price</th>
+                                                  <th scope="col" style={{ border: "1px solid black" }}>QTY</th>
+                                                  <th scope="col" style={{ border: "1px solid black" }}>Date</th>
+                                                  <th scope="col" style={{ border: "1px solid black" }}>Total Amount</th>
+                                                </tr>
+
+                                                <tr className="text-center" key={i}>
+                                                  <td className="table-tr-th-border"> <img src={require(`../../assets/img/theme/${pt.invoice_image}`)} alt="loading"></img></td>
+                                                  <td className="table-tr-th-border">{pt.product_item} </td>
+                                                  <td className="table-tr-th-border">{pt.p_price} </td>
+                                                  <td className="table-tr-th-border">{pt.total_quantity}</td>
+                                                  <td className="table-tr-th-border">{pt.date_pay}</td>
+                                                  <td className="table-tr-th-border">{pt.amount}</td>
+                                                </tr>
+
+                                              </tbody>
+                                            </Table>
+
+                                          </React.Fragment>
+                                        )
+                                      })}
+                                    </div>
+
+                                    <div className="modal-footer">
+                                      <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                    </div>
+
                                   </div>
-                                  <h1 className="modal-title fs-5" id={`exampleModalLabel1-${i}`} style={{ textAlign: "center", margin: "20px" }}>
-                                    Customer All Previous  Orders For <strong><i>{user.number}</i></strong></h1>
-                                  <hr style={{ width: "40%", margin: "0 auto" }} />
-                                  <div className="modal-body">
-
-                                    {Array.isArray(purchaseTimeData) && purchaseTimeData.map((pt, i) => {
-                                      return (
-                                        <React.Fragment key={i}>
-                                          <div className="element-index-heading" key={i}>Order Summary<strong>{pt.number}</strong></div>
-
-                                          <Table className="align-items-center table-flush" responsive>
-                                            <tbody style={{ border: "1px solid black" }}>
-                                              <tr className="table-thead-tr-headings table-thead-main-body">
-                                                <th scope="col" style={{ border: "1px solid black" }}>Image</th>
-                                                <th scope="col" style={{ border: "1px solid black" }}>Product Name</th>
-                                                <th scope="col" style={{ border: "1px solid black" }}>Price</th>
-                                                <th scope="col" style={{ border: "1px solid black" }}>QTY</th>
-                                                <th scope="col" style={{ border: "1px solid black" }}>Date</th>
-                                                <th scope="col" style={{ border: "1px solid black" }}>Total Amount</th>
-                                              </tr>
-
-                                              <tr className="text-center" key={i}>
-                                                <td className="table-tr-th-border"> <img src={require(`../../assets/img/theme/${pt.invoice_image}`)} alt="loading"></img></td>
-                                                <td className="table-tr-th-border">{pt.product_item} </td>
-                                                <td className="table-tr-th-border">{pt.p_price} </td>
-                                                <td className="table-tr-th-border">{pt.total_quantity}</td>
-                                                <td className="table-tr-th-border">{pt.date_pay}</td>
-                                                <td className="table-tr-th-border">{pt.amount}</td>
-                                              </tr>
-
-                                            </tbody>
-                                          </Table>
-
-                                        </React.Fragment>
-                                      )
-                                    })}
-                                  </div>
-
-                                  <div className="modal-footer">
-                                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
-                                  </div>
-
                                 </div>
                               </div>
-                            </div>
-                          </td>
-                          {/* Purchase Time Modal  ends here */}
+                            </td>
+                            {/* Purchase Time Modal  ends here */}
 
 
-                          <td className="table-tr-th-border">{user.message}</td>
-                          <td className="table-tr-th-border">{user.add_by}</td>
-                          <td className="table-tr-th-border"><Button className="table-td-createby">{user.status}</Button></td>
-                          <td className="table-tr-th-border">{user.date_add.slice(0, 10)}</td>
-                          <td className="table-tr-th-border">
-                            {/* <!-- Button trigger modal --> */}
+                            <td className="table-tr-th-border">{user.message}</td>
+                            <td className="table-tr-th-border">{user.add_by}</td>
+                            <td className="table-tr-th-border"><Button className="table-td-createby">{user.status}</Button></td>
+                            <td className="table-tr-th-border">{user.date_add.slice(0, 10)}</td>
+                            <td className="table-tr-th-border">
+                              {/* <!-- Button trigger modal --> */}
 
-                            <Button type="button" className="table-td-createby p-1" data-bs-toggle="modal" data-bs-target="#exampleModal" style={{ backgroundColor: "#4141e7", color: "white" }}>
-                              <i className="fa fa-pencil" />
-                            </Button>
+                              <Button type="button" className="table-td-createby p-1" data-bs-toggle="modal" data-bs-target="#exampleModal" style={{ backgroundColor: "#4141e7", color: "white" }}>
+                                <i className="fa fa-pencil" />
+                              </Button>
 
-                            {/* <!-- Modal --> */}
-                            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                              <div className="modal-dialog modal-xl">
-                                <div className="modal-content">
-                                  <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
-                                    <h1 className="modal-title fs-8" id="exampleModalLabel">FeedBack</h1>
-                                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                  </div>
-                                  <h1 className="modal-title fs-5" id="exampleModalLabel" style={{ textAlign: "center", margin: "20px" }}>Customer Support Queries Related To- <b>{user.number}</b>
+                              {/* <!-- Modal --> */}
+                              <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div className="modal-dialog modal-xl">
+                                  <div className="modal-content">
+                                    <div className="modal-header" style={{ backgroundColor: "antiquewhite" }}>
+                                      <h1 className="modal-title fs-8" id="exampleModalLabel">FeedBack</h1>
+                                      <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <h1 className="modal-title fs-5" id="exampleModalLabel" style={{ textAlign: "center", margin: "20px" }}>Customer Support Queries Related To- <b>{user.number}</b>
 
-                                  </h1>
-                                  <hr style={{ width: "40%", margin: "0 auto" }} />
-                                  <div className="modal-body">
-                                    <div className="modal-body-leads-webwhatsapp">
-                                      <Form>
-                                        <Row>
-                                          <Col md={6}>
-                                            <FormGroup>
-                                              <Label for="exampleEmail" className="feedback-modal-label">Customer Number<span className="required-marker" >*</span> </Label>
-                                              <Input
-                                                id="exampleAddress"
-                                                name="address"
-                                                placeholder="9210XXXXXX"
-                                                type="number"
-                                              />
-                                            </FormGroup>
-                                          </Col>
+                                    </h1>
+                                    <hr style={{ width: "40%", margin: "0 auto" }} />
+                                    <div className="modal-body">
+                                      <div className="modal-body-leads-webwhatsapp">
+                                        <Form>
+                                          <Row>
+                                            <Col md={6}>
+                                              <FormGroup>
+                                                <Label for="exampleEmail" className="feedback-modal-label">Customer Number<span className="required-marker" >*</span> </Label>
+                                                <Input
+                                                  id="exampleAddress"
+                                                  name="address"
+                                                  placeholder="9210XXXXXX"
+                                                  type="number"
+                                                />
+                                              </FormGroup>
+                                            </Col>
 
-                                          <Col md={6}>
-                                            <FormGroup>
-                                              <Label for="exampleEmail" className="feedback-modal-label"> Status<span className="required-marker" >*</span> </Label>
-                                              <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
-                                                <option value={""}>Select</option>
-                                                <option value={"option1"}>Sale </option>
-                                                <option value={"option2"}>FollowUp</option>
-                                                <option value={"option3"}>Not Interested</option>
-                                                <option value={"option4"}>Not Responding</option>
-                                                <option value={"option5"}>Call Facility Not Available</option>
-                                                <option value={"option6"}>Close</option>
-                                              </select>
-                                            </FormGroup>
-                                          </Col>
-                                        </Row>
+                                            <Col md={6}>
+                                              <FormGroup>
+                                                <Label for="exampleEmail" className="feedback-modal-label"> Status<span className="required-marker" >*</span> </Label>
+                                                <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
+                                                  <option value={""}>Select</option>
+                                                  <option value={"option1"}>Sale </option>
+                                                  <option value={"option2"}>FollowUp</option>
+                                                  <option value={"option3"}>Not Interested</option>
+                                                  <option value={"option4"}>Not Responding</option>
+                                                  <option value={"option5"}>Call Facility Not Available</option>
+                                                  <option value={"option6"}>Close</option>
+                                                </select>
+                                              </FormGroup>
+                                            </Col>
+                                          </Row>
 
-                                        <Row>
-                                          <Col md={6}>
-                                            <FormGroup>
-                                              <Label for="exampleEmail" className="feedback-modal-label">Leads Source</Label>
-                                              <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
-                                                <option value={"option1"}>web whatsapp </option>
-                                                <option value={"option2"}>FB</option>
-                                              </select>
-                                            </FormGroup>
-                                          </Col>
+                                          <Row>
+                                            <Col md={6}>
+                                              <FormGroup>
+                                                <Label for="exampleEmail" className="feedback-modal-label">Leads Source</Label>
+                                                <select id="option" value={selectedOption} onChange={handleChange1} className="form-control-alternative">
+                                                  <option value={"option1"}>web whatsapp </option>
+                                                  <option value={"option2"}>FB</option>
+                                                </select>
+                                              </FormGroup>
+                                            </Col>
 
-                                          <Col md={6}>
-                                            <FormGroup>
-                                              <Label for="exampleEmail" className="feedback-modal-label">Message</Label>
-                                              <Input
-                                                id="exampleAddress"
-                                                name="MailText"
-                                                placeholder="Type Your Message Here"
-                                                type="textarea"
-                                              />
-                                            </FormGroup>
-                                          </Col>
-                                        </Row>
+                                            <Col md={6}>
+                                              <FormGroup>
+                                                <Label for="exampleEmail" className="feedback-modal-label">Message</Label>
+                                                <Input
+                                                  id="exampleAddress"
+                                                  name="MailText"
+                                                  placeholder="Type Your Message Here"
+                                                  type="textarea"
+                                                />
+                                              </FormGroup>
+                                            </Col>
+                                          </Row>
 
-                                        <div className="modal-footer">
-                                          <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
-                                          <button type="submit" className="btn btn-primary">Submit</button>
-                                        </div>
-                                      </Form>
+                                          <div className="modal-footer">
+                                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" style={{ backgroundColor: "red", color: "white" }}>Close</button>
+                                            <button type="submit" className="btn btn-primary">Submit</button>
+                                          </div>
+                                        </Form>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr className="text-center">
+                        <th className="table-tr-th-border" colSpan="14" style={{ backgroundColor: "bisque" }}>
+                          No Results Found
+                        </th>
+                      </tr>
+                    )}
                   </tbody>
                 </Table>
 

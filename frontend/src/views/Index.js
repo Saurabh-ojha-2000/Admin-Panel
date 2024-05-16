@@ -107,7 +107,6 @@ const Index = (props) => {
     event.preventDefault();
     try {
       const responseDateSearch = await axios.get(`http://localhost:5000/date-search?fromDate=${selectedDateFrom}&toDate=${selectedDateTo}&tablename=tbl_payment_orders`);
-      // console.log("Searching results for datesearch is : ", responseDateSearch);
 
       if (responseDateSearch.data && responseDateSearch.data.length > 0) {
         setUserdata(responseDateSearch.data);
@@ -356,7 +355,7 @@ const Index = (props) => {
                             <option value={200}>200</option>
                             <option value={250}>250</option>
                           </select>
-                          <Button type="submit" className="form-control-table-inner-button" style={{ marginLeft: "10px" }}>Go</Button>
+                          <Button type="submit" className="form-control-table-inner-button">Go</Button>
                         </div>
                       </FormGroup>
                     </Form>
@@ -378,7 +377,7 @@ const Index = (props) => {
                             <Input type="date" className="form-control-alternative" value={selectedDateTo} onChange={handleDateChangeTo} placeholder="dd/mm/yyyy" />
                           </Col>
 
-                          <div> <Button type="submit" className="form-control-table-inner-button" style={{ marginLeft: "10px", marginTop: "30px" }}>Go</Button> </div>
+                          <div> <Button type="submit" className="form-control-table-inner-button" style={{ marginTop: "30px" }}>Go</Button> </div>
 
                         </div>
 

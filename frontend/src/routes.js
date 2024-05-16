@@ -229,14 +229,14 @@ var routes = [
         layout: "/admin",
       },
     ],
-  },
-  {
-    path: "/logout",
-    name: "Logout",
-    icon: "fa-solid fa-arrow-right-from-bracket",
-    component: "",
-    layout: "/admin",
   }
+  // {
+  //   path: "/login",
+  //   name: "Logout",
+  //   icon: "fa-solid fa-arrow-right-from-bracket",
+  //   component: () => null,
+  //   layout: "/auth",
+  // }
 
 
 ];

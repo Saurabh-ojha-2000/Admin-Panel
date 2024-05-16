@@ -18,7 +18,7 @@ const Login = () => {
     axios.post("http://localhost:5000/login", values)
       .then(res => {
         if (res.data.Status === "Success") {
-          navigate("/");
+          navigate("/admin/order-manage");
         } else {
           alert(res.data.Error || 'Something went wrong in the login page');
         }
@@ -77,19 +77,19 @@ const Login = () => {
               </div>
               <div className="text-center">
                 <Button className="my-4" color="primary" type="submit" >Login</Button>
-                <Link to="/register" type="button" className="registerbtn"> Create Account</Link>
+                <Button className="my-4" color="secondary" type="submit" ><Link to="/register" type="button" className="registerbtn"> Create Account</Link></Button>
               </div>
             </Form>
           </CardBody>
         </Card>
-        <Row className="mt-3">
+        {/* <Row className="mt-3">
           <Col xs="6">
             <a className="text-light" href="#pablo" onClick={(e) => e.preventDefault()} > <small>Forgot password?</small> </a>
           </Col>
           <Col className="text-right" xs="6">
             <a className="text-light" href="#pablo" onClick={(e) => e.preventDefault()} > <small>Create new account</small> </a>
           </Col>
-        </Row>
+        </Row> */}
       </Col >
     </>
   );
